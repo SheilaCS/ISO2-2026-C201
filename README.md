@@ -1,5 +1,3 @@
-# ISO2-2026-C201
-
 # ISO2-2026-**C201**
 
 ## Repositorio del equipo de ISO 2 2026 C201
