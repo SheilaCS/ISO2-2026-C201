@@ -1,17 +1,14 @@
-# Decisiones del proyecto
- 
-## D-001 · Agente para implementar
-Fecha: 13/10 · It. 0 · Acta: 13/10
-...
- 
-## D-002 · Estructura Maven multimódulo
-Fecha: 19/10 · It. 0 · Acta: 19/10 · Issue: #12
-Contexto: hay dos aplicaciones, servidor y
-  cliente, en un mismo repositorio.
-Decisión: pom padre radiodiagnostico con dos
-  módulos: servidor y cliente.
-Alternativas: dos repositorios; un solo módulo.
-Motivo: un mvn verify construye todo y las
-  versiones se fijan una vez en el padre.
-Consecuencias: cada módulo con su versión; al
-  cambiar la del padre, actualizar <parent>.
+# DECISIONS.md — Registro de decisiones del proyecto
+
+> Registro de decisiones de requisitos, análisis, diseño y arquitectura del proyecto
+> Sistema Integral de Gestión de Radiodiagnóstico e Imagen Médica — SESCAM.
+> Cada decisión se enlaza al acta donde se acordó.
+
+
+
+## D-001 • Estructura inicial del repositorio
+
+**Fecha:** 11/10/2026 · **Iteración:** 0 · **Acta:** 11/10
+**Contexto:** el enunciado exige una arquitectura cliente-servidor con múltiples clientes (escritorio, web, móvil) y Maven multimódulo.
+**Decisión:** usar un único repositorio con la estructura:
+
