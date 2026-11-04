@@ -1,2 +1,4 @@
+com\sescam\radiodiagnostico\pruebas\Informe.class
+com\sescam\radiodiagnostico\pruebas\AgenteBBDD.class
 com\sescam\radiodiagnostico\pruebas\IGestionPruebasService.class
 com\sescam\radiodiagnostico\pruebas\GestionPruebasServiceImpl.class

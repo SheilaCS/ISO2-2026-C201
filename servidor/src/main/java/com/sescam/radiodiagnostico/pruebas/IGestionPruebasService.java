@@ -3,7 +3,7 @@ package com.sescam.radiodiagnostico.pruebas;
 import java.util.List;
 
 /**
- * CONTRATO DEL SERVICIO DE GESTIÓN DE PRUEBAS Y RESULTADOS (Miriam y Yasmine)
+ * CONTRATO DEL SERVICIO DE GESTIÓN DE PRUEBAS Y RESULTADOS (Yasmine)
  * Cumple con SOLID (DIP).
  */
 public interface IGestionPruebasService {
