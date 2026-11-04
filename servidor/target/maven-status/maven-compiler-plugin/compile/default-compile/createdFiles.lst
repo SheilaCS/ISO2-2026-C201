@@ -1,2 +1,2 @@
-com\sescam\radiodiagnostico\pruebas\IGestionPruebasService.class
-com\sescam\radiodiagnostico\pruebas\GestionPruebasServiceImpl.class
+com\sescam\radiodiagnostico\cdu02_solicitudes\ISolicitudService.class
+com\sescam\radiodiagnostico\cdu02_solicitudes\SolicitudServiceImpl.class
