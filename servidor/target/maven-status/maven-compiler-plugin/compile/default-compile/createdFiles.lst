@@ -1,2 +1,15 @@
-com\sescam\radiodiagnostico\pruebas\IGestionPruebasService.class
-com\sescam\radiodiagnostico\pruebas\GestionPruebasServiceImpl.class
+com\sescam\radiodiagnostico\cdu11_auditoria\IAuditoriaService.class
+com\sescam\radiodiagnostico\cdu05_parametros\IParametroService.class
+com\sescam\radiodiagnostico\cdu20_informes_operativos\InformesOperativosServiceImpl.class
+com\sescam\radiodiagnostico\cdu17_seguimiento\ISeguimientoService.class
+com\sescam\radiodiagnostico\cdu17_seguimiento\SeguimientoServiceImpl.class
+com\sescam\radiodiagnostico\cdu02_solicitudes\ISolicitudService.class
+com\sescam\radiodiagnostico\cdu08_informes\Informe.class
+com\sescam\radiodiagnostico\cdu05_parametros\ParametroServiceImpl.class
+com\sescam\radiodiagnostico\cdu14_estado_solicitudes\EstadoServiceImpl.class
+com\sescam\radiodiagnostico\cdu20_informes_operativos\IInformesOperativosService.class
+com\sescam\radiodiagnostico\cdu08_informes\IGestionPruebasService.class
+com\sescam\radiodiagnostico\cdu11_auditoria\AuditoriaServiceImpl.class
+com\sescam\radiodiagnostico\cdu02_solicitudes\SolicitudServiceImpl.class
+com\sescam\radiodiagnostico\cdu08_informes\GestionPruebasServiceImpl.class
+com\sescam\radiodiagnostico\cdu14_estado_solicitudes\IEstadoService.class

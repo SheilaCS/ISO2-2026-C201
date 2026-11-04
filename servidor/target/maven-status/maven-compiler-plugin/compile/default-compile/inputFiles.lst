@@ -1,2 +1,15 @@
-C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\pruebas\GestionPruebasServiceImpl.java
-C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\pruebas\IGestionPruebasService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu02_solicitudes\ISolicitudService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu02_solicitudes\SolicitudServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu05_parametros\IParametroService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu05_parametros\ParametroServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu08_informes\GestionPruebasServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu08_informes\IGestionPruebasService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu08_informes\Informe.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu11_auditoria\AuditoriaServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu11_auditoria\IAuditoriaService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu14_estado_solicitudes\EstadoServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu14_estado_solicitudes\IEstadoService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu17_seguimiento\ISeguimientoService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu17_seguimiento\SeguimientoServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu20_informes_operativos\IInformesOperativosService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu20_informes_operativos\InformesOperativosServiceImpl.java
