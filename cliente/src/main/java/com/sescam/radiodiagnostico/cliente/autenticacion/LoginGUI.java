@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.Arrays;
 import javax.swing.*;
+import com.sescam.radiodiagnostico.autenticacion.AutenticacionServiceImpl;
 
 public class LoginGUI extends JFrame {
 
@@ -78,7 +79,7 @@ public class LoginGUI extends JFrame {
 
     public static void main(String[] args) {
     SwingUtilities.invokeLater(() ->
-        new LoginGUI(new ServicioAutenticacionSimulado())
+        new LoginGUI(new ServicioAutenticacionServidor(new AutenticacionServiceImpl()))
                 .setVisible(true)
     );
 }
