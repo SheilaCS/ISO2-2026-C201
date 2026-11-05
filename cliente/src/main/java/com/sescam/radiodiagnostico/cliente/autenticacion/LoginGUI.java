@@ -10,8 +10,11 @@ public class LoginGUI extends JFrame {
     private final JTextField campoUsuario = new JTextField(20);
     private final JPasswordField campoClave = new JPasswordField(20);
     private final JLabel mensaje = new JLabel("Introduce tus datos de acceso.");
+    private final ServicioAutenticacion servicioAutenticacion;
+    private SesionUsuario sesionActual;
 
-    public LoginGUI() {
+    public LoginGUI(ServicioAutenticacion servicioAutenticacion) {
+    this.servicioAutenticacion = servicioAutenticacion;
         setTitle("SESCAM - Inicio de sesión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -46,24 +49,37 @@ public class LoginGUI extends JFrame {
     }
 
     private void iniciarSesion() {
-        String usuario = campoUsuario.getText().trim();
-        char[] clave = campoClave.getPassword();
+    String usuario = campoUsuario.getText().trim();
+    char[] clave = campoClave.getPassword();
 
-        try {
-            if (usuario.isEmpty() || clave.length == 0) {
-                mensaje.setText("Debes introducir usuario y contraseña.");
-                return;
-            }
-
-            // La autenticación se conectará al servicio acordado con el servidor.
-            mensaje.setText("Autenticación pendiente de conectar al servidor.");
-        } finally {
-            Arrays.fill(clave, '\0');
-            campoClave.setText("");
+    try {
+        if (usuario.isEmpty() || clave.length == 0) {
+            mensaje.setText("Debes introducir usuario y contraseña.");
+            return;
         }
+
+        SesionUsuario resultado =
+                servicioAutenticacion.iniciarSesion(usuario, clave);
+
+        if (resultado == null) {
+            mensaje.setText("Usuario o contraseña incorrectos.");
+            return;
+        }
+
+        sesionActual = resultado;
+        mensaje.setText("Acceso correcto: " + sesionActual.identificador()
+                + " (" + sesionActual.rol() + ")");
+
+    } finally {
+        Arrays.fill(clave, '\0');
+        campoClave.setText("");
     }
+}
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LoginGUI().setVisible(true));
-    }
+    SwingUtilities.invokeLater(() ->
+        new LoginGUI(new ServicioAutenticacionSimulado())
+                .setVisible(true)
+    );
+}
 }
