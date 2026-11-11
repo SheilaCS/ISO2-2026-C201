@@ -1,9 +1,10 @@
 package com.sescam.radiodiagnostico.cdu02_solicitudes;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class SolicitudServiceImplTest {
 
@@ -11,6 +12,11 @@ public class SolicitudServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        
+         org.junit.jupiter.api.Assumptions.assumeFalse(
+            java.awt.GraphicsEnvironment.isHeadless(), 
+            "Saltando test de GUI porque no hay entorno gráfico"
+            );
         service = new SolicitudServiceImpl();
     }
 
