@@ -18,7 +18,7 @@ jobs:
       java-version: '21'    # igual que en el pom
       cache: maven          # guarda las dependencias- 
    - name: Compilar y pasar los tests
-     run: mvn -B verify      # -B: sin preguntas
+     run: xvfb-run -a mvn -B verify      # -B: sin preguntas
 
 # Opción: empaquetar SIN pasar los tests
 # - name: Compilar sin tests
