@@ -15,11 +15,25 @@ import java.nio.charset.StandardCharsets;
  */
 public class CitasHttpClient {
 
-    // Direccion del servidor de citas
-    private static final String URL =
-        "http://localhost:8080/citas";
+    // Direccion configurable del servidor
+    private final String url;
 
     private final HttpClient cliente = HttpClient.newHttpClient();
+
+    /**
+     * Constructor utilizado por la aplicacion.
+     */
+    public CitasHttpClient() {
+        this("http://localhost:8080/citas");
+    }
+
+    /**
+     * Constructor para pruebas, en el mismo paquete.
+     * Permite utilizar un servidor HTTP simulado.
+     */
+    CitasHttpClient(String url) {
+        this.url = url;
+    }
 
     /**
      * Consultar una cita.
@@ -28,7 +42,7 @@ public class CitasHttpClient {
             throws IOException, InterruptedException {
 
         HttpRequest peticion = HttpRequest.newBuilder()
-            .uri(URI.create(URL + "/consultar?id=" + idCita))
+            .uri(URI.create(url + "/consultar?id=" + idCita))
             .GET()
             .build();
 
@@ -85,9 +99,11 @@ public class CitasHttpClient {
             throws IOException, InterruptedException {
 
         HttpRequest peticion = HttpRequest.newBuilder()
-            .uri(URI.create(URL + ruta))
-            .header("Content-Type",
-                    "application/x-www-form-urlencoded")
+            .uri(URI.create(url + ruta))
+            .header(
+                "Content-Type",
+                "application/x-www-form-urlencoded"
+            )
             .POST(HttpRequest.BodyPublishers.ofString(datos))
             .build();
 
@@ -103,7 +119,6 @@ public class CitasHttpClient {
      * Codificar texto para enviarlo mediante HTTP.
      */
     private String codificar(String texto) {
-
         return URLEncoder.encode(
             texto, StandardCharsets.UTF_8
         );
