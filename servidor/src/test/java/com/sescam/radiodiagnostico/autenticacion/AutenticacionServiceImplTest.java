@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Pruebas del servicio de autenticación del servidor (CDU1, RF01).
  * Casos diseñados con clases de equivalencia, valores límite y conjetura de errores
- * (tabla en la wiki, página "Pruebas CDU1").
+ * (tabla en la wiki, página "Iteración 1", apartado "Pruebas").
  */
 @DisplayName("CDU1 · Servidor · AutenticacionServiceImpl")
 class AutenticacionServiceImplTest {
