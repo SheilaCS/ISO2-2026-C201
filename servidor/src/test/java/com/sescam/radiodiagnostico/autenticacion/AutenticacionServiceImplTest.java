@@ -2,46 +2,127 @@ package com.sescam.radiodiagnostico.autenticacion;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class AutenticacionServiceImplTest {
 
-    private final IAutenticacionService servicio = new AutenticacionServiceImpl();
+    private final IAutenticacionService servicio =
+            new AutenticacionServiceImpl();
 
     @Test
+    @DisplayName("Las credenciales correctas devuelven una sesión con identificador y rol")
     void credencialesCorrectasDevuelvenSesionConSuRol() {
-        Optional<Sesion> sesion = servicio.iniciarSesion("medico.demo", "demo".toCharArray());
+        // Preparar
+        String usuario = "medico.demo";
+        char[] clave = "demo".toCharArray();
 
-        assertTrue(sesion.isPresent());
-        assertEquals("medico.demo", sesion.get().identificador());
-        assertEquals(Rol.MEDICO, sesion.get().rol());
+        // Ejecutar
+        Optional<Sesion> resultado =
+                servicio.iniciarSesion(usuario, clave);
+
+        // Comprobar
+        assertTrue(resultado.isPresent(), "Debe devolver una sesión");
+
+        Sesion sesion = resultado.orElseThrow();
+
+        assertAll(
+                () -> assertEquals(usuario, sesion.identificador()),
+                () -> assertEquals(Rol.MEDICO, sesion.rol())
+        );
     }
 
     @Test
+    @DisplayName("Cada usuario de demostración recibe el rol correspondiente")
     void cadaUsuarioDePruebaTieneSuRol() {
-        assertEquals(Rol.PACIENTE,
-                servicio.iniciarSesion("paciente.demo", "demo".toCharArray()).orElseThrow().rol());
-        assertEquals(Rol.ADMINISTRATIVO,
-                servicio.iniciarSesion("administrativo.demo", "demo".toCharArray()).orElseThrow().rol());
-        assertEquals(Rol.ADMINISTRADOR,
-                servicio.iniciarSesion("admin.demo", "demo".toCharArray()).orElseThrow().rol());
+        // Preparar
+        char[] clave = "demo".toCharArray();
+
+        // Ejecutar
+        Optional<Sesion> paciente =
+                servicio.iniciarSesion("paciente.demo", clave);
+        Optional<Sesion> administrativo =
+                servicio.iniciarSesion("administrativo.demo", clave);
+        Optional<Sesion> administrador =
+                servicio.iniciarSesion("admin.demo", clave);
+
+        // Comprobar
+        assertAll(
+                () -> assertEquals(
+                        Rol.PACIENTE,
+                        paciente.orElseThrow().rol()
+                ),
+                () -> assertEquals(
+                        Rol.ADMINISTRATIVO,
+                        administrativo.orElseThrow().rol()
+                ),
+                () -> assertEquals(
+                        Rol.ADMINISTRADOR,
+                        administrador.orElseThrow().rol()
+                )
+        );
     }
 
     @Test
+    @DisplayName("Una contraseña incorrecta rechaza el acceso")
     void claveIncorrectaRechazaAcceso() {
-        assertTrue(servicio.iniciarSesion("medico.demo", "incorrecta".toCharArray()).isEmpty());
+        // Preparar
+        String usuario = "medico.demo";
+        char[] clave = "incorrecta".toCharArray();
+
+        // Ejecutar
+        Optional<Sesion> resultado =
+                servicio.iniciarSesion(usuario, clave);
+
+        // Comprobar
+        assertTrue(
+                resultado.isEmpty(),
+                "No debe crear una sesión con una contraseña incorrecta"
+        );
     }
 
     @Test
+    @DisplayName("Un usuario desconocido no puede iniciar sesión")
     void usuarioDesconocidoRechazaAcceso() {
-        assertTrue(servicio.iniciarSesion("desconocido", "demo".toCharArray()).isEmpty());
+        // Preparar
+        String usuario = "desconocido";
+        char[] clave = "demo".toCharArray();
+
+        // Ejecutar
+        Optional<Sesion> resultado =
+                servicio.iniciarSesion(usuario, clave);
+
+        // Comprobar
+        assertTrue(
+                resultado.isEmpty(),
+                "No debe crear una sesión para un usuario desconocido"
+        );
     }
 
     @Test
+    @DisplayName("Un usuario nulo o una contraseña nula rechazan el acceso")
     void datosNulosRechazanAcceso() {
-        assertTrue(servicio.iniciarSesion(null, "demo".toCharArray()).isEmpty());
-        assertTrue(servicio.iniciarSesion("medico.demo", null).isEmpty());
+        // Preparar
+        char[] clave = "demo".toCharArray();
+
+        // Ejecutar
+        Optional<Sesion> usuarioNulo =
+                servicio.iniciarSesion(null, clave);
+        Optional<Sesion> claveNula =
+                servicio.iniciarSesion("medico.demo", null);
+
+        // Comprobar
+        assertAll(
+                () -> assertTrue(
+                        usuarioNulo.isEmpty(),
+                        "Debe rechazar un usuario nulo"
+                ),
+                () -> assertTrue(
+                        claveNula.isEmpty(),
+                        "Debe rechazar una contraseña nula"
+                )
+        );
     }
 }
