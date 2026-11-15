@@ -18,7 +18,7 @@ jobs:
       java-version: '17'    # igual que en el pom
       cache: maven 
    - name: Instalar pantalla virtual
-        run: sudo apt-get install -y xvfb         # guarda las dependencias- 
+     run: sudo apt-get install -y xvfb         # guarda las dependencias- 
    - name: Compilar y pasar los tests
      run: mvn -B verify      # -B: sin preguntas
 
