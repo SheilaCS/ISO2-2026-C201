@@ -1,2 +1,4 @@
+
+# Ignorar carpetas generadas por Maven
 target/
 .vscode/
