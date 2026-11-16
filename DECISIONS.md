@@ -59,6 +59,7 @@ Tras la revisión de los tests se utilizan:
 - Estructura preparar, ejecutar y comprobar.
 - `assertAll` para comprobaciones relacionadas.
 - Casos representativos del comportamiento, evitando pruebas independientes de getters y setters triviales.
+- Casos diseñados con clases de equivalencia, valores límite y conjetura de errores. La tabla de casos está en la wiki, página "Iteración 1", apartado "Pruebas".
 
 ### Eliminación del simulador del cliente
 
@@ -66,7 +67,7 @@ Tras la revisión de los tests se utilizan:
 
 Se conserva `AutenticacionServiceImpl`, que sigue proporcionando la autenticación de demostración del servidor.
 
-**Resultado:** quedan siete pruebas: cinco del servicio del servidor y dos del adaptador del cliente. La ejecución de `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas.
+**Resultado:** quedan 18 pruebas: 14 del servicio del servidor y 4 del adaptador del cliente. La ejecución de `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas.
 
 ### Trazabilidad
 
@@ -74,5 +75,5 @@ Se conserva `AutenticacionServiceImpl`, que sigue proporcionando la autenticaci�
 - [PR #35 — Integración de CU01](https://github.com/SheilaCS/ISO2-2026-C201/pull/35).
 - [PR #37 — Revisión de tests y eliminación del simulador](https://github.com/SheilaCS/ISO2-2026-C201/pull/37).
 - [Documentación de la iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-1).
-
+- [PR #40 — Ampliación de pruebas con clases de equivalencia y valores límite](https://github.com/SheilaCS/ISO2-2026-C201/pull/40).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
