@@ -22,6 +22,7 @@ jobs:
    - name: Compilar y pasar los tests
      run: xvfb-run -a mvn -B verify
 
+
 # Opción: empaquetar SIN pasar los tests
 # - name: Compilar sin tests
 #   run: mvn -B package -DskipTests
