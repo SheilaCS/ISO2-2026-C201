@@ -1,0 +1,3 @@
+com\sescam\radiodiagnostico\cliente\cdu02_solicitudes\SolicitudGUITest.class
+com\sescam\radiodiagnostico\cliente\autenticacion\ServicioAutenticacionServidorTest.class
+com\sescam\radiodiagnostico\cliente\autenticacion\ServicioAutenticacionSimuladoTest.class

@@ -1,0 +1,8 @@
+com\sescam\radiodiagnostico\autenticacion\Rol.class
+com\sescam\radiodiagnostico\cdu05_parametros\ParametroServiceImpl.class
+com\sescam\radiodiagnostico\cdu05_parametros\IParametroService.class
+com\sescam\radiodiagnostico\autenticacion\AutenticacionServiceImpl.class
+com\sescam\radiodiagnostico\cdu02_solicitudes\SolicitudServiceImpl.class
+com\sescam\radiodiagnostico\autenticacion\Sesion.class
+com\sescam\radiodiagnostico\autenticacion\IAutenticacionService.class
+com\sescam\radiodiagnostico\cdu02_solicitudes\ISolicitudService.class
