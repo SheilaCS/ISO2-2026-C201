@@ -256,4 +256,227 @@ public class GestionCitasServiceTest {
                 1, fechaFutura(), "12:00"
         ));
     }
+
+    // ==========================================
+    // PRUEBAS ADICIONALES DE COBERTURA JACOCO
+    // ITERACION 3 - RF13
+    // ==========================================
+
+    @Test
+    @DisplayName("Rechazar una solicitud con ID cero")
+    public void testSolicitudCero() {
+
+        // Preparar y ejecutar
+        boolean resultado = servicio.asignarCita(
+                0, 5, fechaFutura(), "10:00");
+
+        // Comprobar
+        assertFalse(resultado);
+    }
+
+    @Test
+    @DisplayName("Rechazar una solicitud con ID negativo")
+    public void testSolicitudNegativa() {
+
+        assertFalse(servicio.asignarCita(
+                -1, 5, fechaFutura(), "10:00"));
+    }
+
+    @Test
+    @DisplayName("Rechazar una fecha incorrecta al asignar")
+    public void testAsignarFechaIncorrecta() {
+
+        assertFalse(servicio.asignarCita(
+                12, 5, "fecha-incorrecta", "10:00"));
+    }
+
+    @Test
+    @DisplayName("Rechazar una hora incorrecta al asignar")
+    public void testAsignarHoraIncorrecta() {
+
+        assertFalse(servicio.asignarCita(
+                12, 5, fechaFutura(), "25:00"));
+    }
+
+    @Test
+    @DisplayName("Permitir dos citas en horas diferentes")
+    public void testAsignarHorasDiferentes() {
+
+        // Preparar
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        // Ejecutar
+        boolean resultado = servicio.asignarCita(
+                13, 6, fechaFutura(), "11:00");
+
+        // Comprobar
+        assertTrue(resultado);
+        assertTrue(servicio.consultarCita(2)
+                .contains("11:00"));
+    }
+
+    @Test
+    @DisplayName("Permitir reutilizar el horario de una cita cancelada")
+    public void testAsignarHorarioCancelado() {
+
+        // Preparar
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        assertTrue(servicio.cancelarCita(1));
+
+        // Ejecutar
+        boolean resultado = servicio.asignarCita(
+                13, 6, fechaFutura(), "10:00");
+
+        // Comprobar
+        assertTrue(resultado);
+        assertTrue(servicio.consultarCita(2)
+                .contains("PROGRAMADA"));
+    }
+
+    @Test
+    @DisplayName("No reprogramar una cita inexistente")
+    public void testReprogramarInexistente() {
+
+        assertFalse(servicio.reprogramarCita(
+                99, fechaFutura(), "11:00"));
+    }
+
+    @Test
+    @DisplayName("No reprogramar una cita en el pasado")
+    public void testReprogramarFechaPasada() {
+
+        // Preparar
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        // Ejecutar
+        boolean resultado = servicio.reprogramarCita(
+                1, fechaPasada(), "11:00");
+
+        // Comprobar
+        assertFalse(resultado);
+
+        // La cita original debe conservarse
+        assertTrue(servicio.consultarCita(1)
+                .contains("10:00"));
+    }
+
+    @Test
+    @DisplayName("Rechazar una fecha incorrecta al reprogramar")
+    public void testReprogramarFechaIncorrecta() {
+
+        // Preparar
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        // Ejecutar
+        boolean resultado = servicio.reprogramarCita(
+                1, "fecha-incorrecta", "11:00");
+
+        // Comprobar
+        assertFalse(resultado);
+    }
+
+    @Test
+    @DisplayName("Rechazar una hora incorrecta al reprogramar")
+    public void testReprogramarHoraIncorrecta() {
+
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        assertFalse(servicio.reprogramarCita(
+                1, fechaFutura(), "30:00"));
+    }
+
+    @Test
+    @DisplayName("No permitir reprogramar a un horario ocupado")
+    public void testReprogramarHorarioOcupado() {
+
+        // Preparar: crear dos citas
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        assertTrue(servicio.asignarCita(
+                13, 6, fechaFutura(), "11:00"));
+
+        // Ejecutar: intentar mover la segunda
+        // al horario de la primera
+        boolean resultado = servicio.reprogramarCita(
+                2, fechaFutura(), "10:00");
+
+        // Comprobar
+        assertFalse(resultado);
+
+        // La segunda cita mantiene su hora
+        assertTrue(servicio.consultarCita(2)
+                .contains("11:00"));
+    }
+
+    @Test
+    @DisplayName("Permitir reprogramar al mismo horario")
+    public void testReprogramarMismoHorario() {
+
+        // Preparar
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        // Ejecutar y comprobar
+        assertTrue(servicio.reprogramarCita(
+                1, fechaFutura(), "10:00"));
+    }
+
+    @Test
+    @DisplayName("Permitir reprogramar a otro horario libre")
+    public void testReprogramarHorarioLibre() {
+
+        // Preparar
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        assertTrue(servicio.asignarCita(
+                13, 6, fechaFutura(), "11:00"));
+
+        // Ejecutar
+        boolean resultado = servicio.reprogramarCita(
+                1, fechaFutura(), "12:00");
+
+        // Comprobar
+        assertTrue(resultado);
+        assertTrue(servicio.consultarCita(1)
+                .contains("12:00"));
+    }
+
+    @Test
+    @DisplayName("Permitir reprogramar al horario de una cita cancelada")
+    public void testReprogramarHorarioCancelado() {
+
+        // Preparar
+        assertTrue(servicio.asignarCita(
+                12, 5, fechaFutura(), "10:00"));
+
+        assertTrue(servicio.asignarCita(
+                13, 6, fechaFutura(), "11:00"));
+
+        assertTrue(servicio.cancelarCita(1));
+
+        // Ejecutar
+        boolean resultado = servicio.reprogramarCita(
+                2, fechaFutura(), "10:00");
+
+        // Comprobar
+        assertTrue(resultado);
+        assertTrue(servicio.consultarCita(2)
+                .contains("10:00"));
+    }
+
+    @Test
+    @DisplayName("No permitir cancelar una cita inexistente")
+    public void testCancelarInexistente() {
+
+        assertFalse(servicio.cancelarCita(999));
+    }
+
 }
