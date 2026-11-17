@@ -2,7 +2,10 @@ C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiod
 C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\autenticacion\IAutenticacionService.java
 C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\autenticacion\Rol.java
 C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\autenticacion\Sesion.java
-C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu02_solicitudes\ISolicitudService.java
-C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu02_solicitudes\SolicitudServiceImpl.java
-C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu05_parametros\IParametroService.java
-C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\cdu05_parametros\ParametroServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\citas\GestionCitasHttpServer.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\citas\GestionCitasServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\citas\IGestionCitasService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\parametros\IParametroService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\parametros\ParametroServiceImpl.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\solicitudes\ISolicitudService.java
+C:\Users\yasmi\Documents\ISO2-2026-C201\servidor\src\main\java\com\sescam\radiodiagnostico\solicitudes\SolicitudServiceImpl.java

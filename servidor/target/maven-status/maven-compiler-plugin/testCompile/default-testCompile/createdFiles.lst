@@ -1,2 +1,4 @@
+com\sescam\radiodiagnostico\citas\GestionCitasServiceTest.class
+com\sescam\radiodiagnostico\solicitudes\SolicitudServiceImplTest.class
 com\sescam\radiodiagnostico\autenticacion\AutenticacionServiceImplTest.class
-com\sescam\radiodiagnostico\cdu02_solicitudes\SolicitudServiceImplTest.class
+com\sescam\radiodiagnostico\parametros\ParametroServiceImplTest.class
