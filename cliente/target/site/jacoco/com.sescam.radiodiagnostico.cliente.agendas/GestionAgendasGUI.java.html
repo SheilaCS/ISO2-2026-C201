@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestionAgendasGUI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cliente</a> &gt; <a href="index.source.html" class="el_package">com.sescam.radiodiagnostico.cliente.agendas</a> &gt; <span class="el_source">GestionAgendasGUI.java</span></div><h1>GestionAgendasGUI.java</h1><pre class="source lang-java linenums">
+package com.sescam.radiodiagnostico.cliente.agendas;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class GestionAgendasGUI extends JFrame {
+
+    private JTextField txtIdMedico;
+    private JTextField txtIdHorario;
+    private JTextField txtFecha;
+    private JTextField txtInicio;
+    private JTextField txtFin;
+
+    private JTextArea areaResultado;
+
+    private AgendasHttpClient clienteHttp;
+
+    // Constructor normal
+    public GestionAgendasGUI() {
+<span class="fc" id="L21">        this(new AgendasHttpClient());</span>
+<span class="fc" id="L22">    }</span>
+
+    // Constructor para las pruebas
+<span class="fc" id="L25">    public GestionAgendasGUI(AgendasHttpClient clienteHttp) {</span>
+
+<span class="fc" id="L27">        this.clienteHttp = clienteHttp;</span>
+
+<span class="fc" id="L29">        setTitle(&quot;SESCAM - Gestion de agendas&quot;);</span>
+<span class="fc" id="L30">        setSize(650, 500);</span>
+<span class="fc" id="L31">        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);</span>
+<span class="fc" id="L32">        setLocationRelativeTo(null);</span>
+
+        // Panel principal con los campos
+<span class="fc" id="L35">        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));</span>
+<span class="fc" id="L36">        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));</span>
+
+<span class="fc" id="L38">        txtIdMedico = new JTextField();</span>
+<span class="fc" id="L39">        txtIdHorario = new JTextField();</span>
+<span class="fc" id="L40">        txtFecha = new JTextField();</span>
+<span class="fc" id="L41">        txtInicio = new JTextField();</span>
+<span class="fc" id="L42">        txtFin = new JTextField();</span>
+
+<span class="fc" id="L44">        panel.add(new JLabel(&quot;ID medico:&quot;));</span>
+<span class="fc" id="L45">        panel.add(txtIdMedico);</span>
+
+<span class="fc" id="L47">        panel.add(new JLabel(&quot;ID horario:&quot;));</span>
+<span class="fc" id="L48">        panel.add(txtIdHorario);</span>
+
+<span class="fc" id="L50">        panel.add(new JLabel(&quot;Fecha (AAAA-MM-DD):&quot;));</span>
+<span class="fc" id="L51">        panel.add(txtFecha);</span>
+
+<span class="fc" id="L53">        panel.add(new JLabel(&quot;Hora inicio (HH:MM):&quot;));</span>
+<span class="fc" id="L54">        panel.add(txtInicio);</span>
+
+<span class="fc" id="L56">        panel.add(new JLabel(&quot;Hora fin (HH:MM):&quot;));</span>
+<span class="fc" id="L57">        panel.add(txtFin);</span>
+
+        // Botones
+<span class="fc" id="L60">        JPanel panelBotones = new JPanel(new FlowLayout());</span>
+
+<span class="fc" id="L62">        JButton btnCrear = new JButton(&quot;Crear horario&quot;);</span>
+<span class="fc" id="L63">        JButton btnConsultar = new JButton(&quot;Consultar agenda&quot;);</span>
+<span class="fc" id="L64">        JButton btnModificar = new JButton(&quot;Modificar horario&quot;);</span>
+<span class="fc" id="L65">        JButton btnEliminar = new JButton(&quot;Eliminar horario&quot;);</span>
+
+<span class="fc" id="L67">        panelBotones.add(btnCrear);</span>
+<span class="fc" id="L68">        panelBotones.add(btnConsultar);</span>
+<span class="fc" id="L69">        panelBotones.add(btnModificar);</span>
+<span class="fc" id="L70">        panelBotones.add(btnEliminar);</span>
+
+        // Zona de resultados
+<span class="fc" id="L73">        areaResultado = new JTextArea();</span>
+<span class="fc" id="L74">        areaResultado.setEditable(false);</span>
+
+<span class="fc" id="L76">        JPanel panelCentro = new JPanel(new BorderLayout());</span>
+<span class="fc" id="L77">        panelCentro.add(panel, BorderLayout.NORTH);</span>
+<span class="fc" id="L78">        panelCentro.add(panelBotones, BorderLayout.CENTER);</span>
+
+<span class="fc" id="L80">        add(panelCentro, BorderLayout.NORTH);</span>
+<span class="fc" id="L81">        add(new JScrollPane(areaResultado), BorderLayout.CENTER);</span>
+
+        // Acciones
+<span class="fc" id="L84">        btnCrear.addActionListener(e -&gt; crearHorario());</span>
+<span class="fc" id="L85">        btnConsultar.addActionListener(e -&gt; consultarAgenda());</span>
+<span class="fc" id="L86">        btnModificar.addActionListener(e -&gt; modificarHorario());</span>
+<span class="fc" id="L87">        btnEliminar.addActionListener(e -&gt; eliminarHorario());</span>
+<span class="fc" id="L88">    }</span>
+
+    // Validar ID
+    private int leerId(String texto) {
+
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (!ValidacionesAgendas.validarId(texto)) {</span>
+<span class="fc" id="L94">            throw new IllegalArgumentException(</span>
+                    &quot;El ID debe ser un numero entero mayor que 0&quot;);
+        }
+
+<span class="fc" id="L98">        return Integer.parseInt(texto.trim());</span>
+    }
+
+    // Validar fecha y horas
+    private void validarDatosHorario() {
+
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (!ValidacionesAgendas.validarFecha(</span>
+<span class="fc" id="L105">                txtFecha.getText().trim())) {</span>
+
+<span class="fc" id="L107">            throw new IllegalArgumentException(</span>
+                    &quot;La fecha debe ser valida y no estar en el pasado (AAAA-MM-DD)&quot;);
+        }
+
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (!ValidacionesAgendas.validarRangoHorario(</span>
+<span class="fc" id="L112">                txtInicio.getText().trim(),</span>
+<span class="fc" id="L113">                txtFin.getText().trim())) {</span>
+
+<span class="fc" id="L115">            throw new IllegalArgumentException(</span>
+                    &quot;Las horas deben tener formato HH:MM y la hora inicial debe ser anterior a la final&quot;);
+        }
+<span class="fc" id="L118">    }</span>
+
+    // Crear horario
+    private void crearHorario() {
+        try {
+<span class="fc" id="L123">            int idMedico = leerId(txtIdMedico.getText());</span>
+
+<span class="fc" id="L125">            validarDatosHorario();</span>
+
+<span class="fc" id="L127">            String respuesta = clienteHttp.crearHorario(</span>
+                    idMedico,
+<span class="fc" id="L129">                    txtFecha.getText().trim(),</span>
+<span class="fc" id="L130">                    txtInicio.getText().trim(),</span>
+<span class="fc" id="L131">                    txtFin.getText().trim());</span>
+
+<span class="fc" id="L133">            areaResultado.setText(respuesta);</span>
+
+<span class="fc" id="L135">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L136">            mostrarError(ex.getMessage());</span>
+
+<span class="fc" id="L138">        } catch (Exception ex) {</span>
+<span class="fc" id="L139">            mostrarError(&quot;Error al conectar con el servidor: &quot;</span>
+<span class="fc" id="L140">                    + ex.getMessage());</span>
+<span class="fc" id="L141">        }</span>
+<span class="fc" id="L142">    }</span>
+
+    // Consultar agenda
+    private void consultarAgenda() {
+        try {
+<span class="fc" id="L147">            int idMedico = leerId(txtIdMedico.getText());</span>
+
+<span class="fc" id="L149">            String respuesta = clienteHttp.consultarAgenda(idMedico);</span>
+<span class="fc" id="L150">            areaResultado.setText(respuesta);</span>
+
+<span class="fc" id="L152">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L153">            mostrarError(ex.getMessage());</span>
+
+<span class="fc" id="L155">        } catch (Exception ex) {</span>
+<span class="fc" id="L156">            mostrarError(&quot;Error al conectar con el servidor: &quot;</span>
+<span class="fc" id="L157">                    + ex.getMessage());</span>
+<span class="fc" id="L158">        }</span>
+<span class="fc" id="L159">    }</span>
+
+    // Modificar horario
+    private void modificarHorario() {
+        try {
+<span class="fc" id="L164">            int idHorario = leerId(txtIdHorario.getText());</span>
+
+<span class="fc" id="L166">            validarDatosHorario();</span>
+
+<span class="fc" id="L168">            String respuesta = clienteHttp.modificarHorario(</span>
+                    idHorario,
+<span class="fc" id="L170">                    txtFecha.getText().trim(),</span>
+<span class="fc" id="L171">                    txtInicio.getText().trim(),</span>
+<span class="fc" id="L172">                    txtFin.getText().trim());</span>
+
+<span class="fc" id="L174">            areaResultado.setText(respuesta);</span>
+
+<span class="fc" id="L176">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L177">            mostrarError(ex.getMessage());</span>
+
+<span class="fc" id="L179">        } catch (Exception ex) {</span>
+<span class="fc" id="L180">            mostrarError(&quot;Error al conectar con el servidor: &quot;</span>
+<span class="fc" id="L181">                    + ex.getMessage());</span>
+<span class="fc" id="L182">        }</span>
+<span class="fc" id="L183">    }</span>
+
+    // Eliminar horario
+    private void eliminarHorario() {
+        try {
+<span class="fc" id="L188">            int idHorario = leerId(txtIdHorario.getText());</span>
+
+<span class="fc" id="L190">            String respuesta = clienteHttp.eliminarHorario(idHorario);</span>
+<span class="fc" id="L191">            areaResultado.setText(respuesta);</span>
+
+<span class="fc" id="L193">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L194">            mostrarError(ex.getMessage());</span>
+
+<span class="fc" id="L196">        } catch (Exception ex) {</span>
+<span class="fc" id="L197">            mostrarError(&quot;Error al conectar con el servidor: &quot;</span>
+<span class="fc" id="L198">                    + ex.getMessage());</span>
+<span class="fc" id="L199">        }</span>
+<span class="fc" id="L200">    }</span>
+
+    // Mostrar errores
+    // Protected permite comprobar los errores en las pruebas
+    protected void mostrarError(String mensaje) {
+<span class="fc" id="L205">        JOptionPane.showMessageDialog(</span>
+                this, mensaje, &quot;Error&quot;, JOptionPane.ERROR_MESSAGE);
+<span class="fc" id="L207">    }</span>
+
+    // Ejecutar interfaz
+    public static void main(String[] args) {
+<span class="fc" id="L211">        SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="fc" id="L212">            GestionAgendasGUI ventana = new GestionAgendasGUI();</span>
+<span class="fc" id="L213">            ventana.setVisible(true);</span>
+<span class="fc" id="L214">        });</span>
+<span class="fc" id="L215">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

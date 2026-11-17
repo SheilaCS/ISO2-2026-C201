@@ -14,16 +14,24 @@ public class GestionAgendasGUI extends JFrame {
 
     private JTextArea areaResultado;
 
-    private AgendasHttpClient clienteHttp = new AgendasHttpClient();
+    private AgendasHttpClient clienteHttp;
 
+    // Constructor normal
     public GestionAgendasGUI() {
+        this(new AgendasHttpClient());
+    }
+
+    // Constructor para las pruebas
+    public GestionAgendasGUI(AgendasHttpClient clienteHttp) {
+
+        this.clienteHttp = clienteHttp;
 
         setTitle("SESCAM - Gestion de agendas");
         setSize(650, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Panel principal con los campos del formulario
+        // Panel principal con los campos
         JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
@@ -48,7 +56,7 @@ public class GestionAgendasGUI extends JFrame {
         panel.add(new JLabel("Hora fin (HH:MM):"));
         panel.add(txtFin);
 
-        // Botones de las operaciones
+        // Botones
         JPanel panelBotones = new JPanel(new FlowLayout());
 
         JButton btnCrear = new JButton("Crear horario");
@@ -61,7 +69,7 @@ public class GestionAgendasGUI extends JFrame {
         panelBotones.add(btnModificar);
         panelBotones.add(btnEliminar);
 
-        // Zona donde se muestran las respuestas del servidor
+        // Zona de resultados
         areaResultado = new JTextArea();
         areaResultado.setEditable(false);
 
@@ -72,14 +80,14 @@ public class GestionAgendasGUI extends JFrame {
         add(panelCentro, BorderLayout.NORTH);
         add(new JScrollPane(areaResultado), BorderLayout.CENTER);
 
-        // Acciones de los botones
+        // Acciones
         btnCrear.addActionListener(e -> crearHorario());
         btnConsultar.addActionListener(e -> consultarAgenda());
         btnModificar.addActionListener(e -> modificarHorario());
         btnEliminar.addActionListener(e -> eliminarHorario());
     }
 
-    // Validar que el identificador sea un entero positivo
+    // Validar ID
     private int leerId(String texto) {
 
         if (!ValidacionesAgendas.validarId(texto)) {
@@ -90,29 +98,30 @@ public class GestionAgendasGUI extends JFrame {
         return Integer.parseInt(texto.trim());
     }
 
-    // Validar la fecha y las horas antes de enviarlas al servidor
+    // Validar fecha y horas
     private void validarDatosHorario() {
 
-        // Comprobar que la fecha sea correcta
-        if (!ValidacionesAgendas.validarFecha(txtFecha.getText().trim())) {
+        if (!ValidacionesAgendas.validarFecha(
+                txtFecha.getText().trim())) {
+
             throw new IllegalArgumentException(
                     "La fecha debe ser valida y no estar en el pasado (AAAA-MM-DD)");
         }
 
-        // Comprobar las horas y que el inicio sea anterior al fin
         if (!ValidacionesAgendas.validarRangoHorario(
-                txtInicio.getText().trim(), txtFin.getText().trim())) {
+                txtInicio.getText().trim(),
+                txtFin.getText().trim())) {
+
             throw new IllegalArgumentException(
                     "Las horas deben tener formato HH:MM y la hora inicial debe ser anterior a la final");
         }
     }
 
-    // Crear un nuevo horario
+    // Crear horario
     private void crearHorario() {
         try {
             int idMedico = leerId(txtIdMedico.getText());
 
-            // Validar los datos antes de enviar la peticion HTTP
             validarDatosHorario();
 
             String respuesta = clienteHttp.crearHorario(
@@ -127,11 +136,12 @@ public class GestionAgendasGUI extends JFrame {
             mostrarError(ex.getMessage());
 
         } catch (Exception ex) {
-            mostrarError("Error al conectar con el servidor: " + ex.getMessage());
+            mostrarError("Error al conectar con el servidor: "
+                    + ex.getMessage());
         }
     }
 
-    // Consultar la agenda de un medico
+    // Consultar agenda
     private void consultarAgenda() {
         try {
             int idMedico = leerId(txtIdMedico.getText());
@@ -143,16 +153,16 @@ public class GestionAgendasGUI extends JFrame {
             mostrarError(ex.getMessage());
 
         } catch (Exception ex) {
-            mostrarError("Error al conectar con el servidor: " + ex.getMessage());
+            mostrarError("Error al conectar con el servidor: "
+                    + ex.getMessage());
         }
     }
 
-    // Modificar un horario existente
+    // Modificar horario
     private void modificarHorario() {
         try {
             int idHorario = leerId(txtIdHorario.getText());
 
-            // Validar los datos antes de enviar la peticion HTTP
             validarDatosHorario();
 
             String respuesta = clienteHttp.modificarHorario(
@@ -167,11 +177,12 @@ public class GestionAgendasGUI extends JFrame {
             mostrarError(ex.getMessage());
 
         } catch (Exception ex) {
-            mostrarError("Error al conectar con el servidor: " + ex.getMessage());
+            mostrarError("Error al conectar con el servidor: "
+                    + ex.getMessage());
         }
     }
 
-    // Eliminar un horario existente
+    // Eliminar horario
     private void eliminarHorario() {
         try {
             int idHorario = leerId(txtIdHorario.getText());
@@ -183,17 +194,19 @@ public class GestionAgendasGUI extends JFrame {
             mostrarError(ex.getMessage());
 
         } catch (Exception ex) {
-            mostrarError("Error al conectar con el servidor: " + ex.getMessage());
+            mostrarError("Error al conectar con el servidor: "
+                    + ex.getMessage());
         }
     }
 
-    // Mostrar un mensaje de error al usuario
-    private void mostrarError(String mensaje) {
+    // Mostrar errores
+    // Protected permite comprobar los errores en las pruebas
+    protected void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(
                 this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    // Ejecutar la ventana Swing
+    // Ejecutar interfaz
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             GestionAgendasGUI ventana = new GestionAgendasGUI();

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestionAgendasServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">servidor</a> &gt; <a href="index.source.html" class="el_package">com.sescam.radiodiagnostico.agendas</a> &gt; <span class="el_source">GestionAgendasServiceImpl.java</span></div><h1>GestionAgendasServiceImpl.java</h1><pre class="source lang-java linenums">
+package com.sescam.radiodiagnostico.agendas;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashMap;
+
+<span class="fc" id="L8">public class GestionAgendasServiceImpl implements IGestionAgendasService {</span>
+
+    // Clase que representa un horario de un médico
+    private static class Horario {
+        int idHorario;
+        int idMedico;
+        LocalDate fecha;
+        LocalTime horaInicio;
+        LocalTime horaFin;
+
+        Horario(int idHorario, int idMedico, LocalDate fecha,
+<span class="fc" id="L19">                LocalTime horaInicio, LocalTime horaFin) {</span>
+<span class="fc" id="L20">            this.idHorario = idHorario;</span>
+<span class="fc" id="L21">            this.idMedico = idMedico;</span>
+<span class="fc" id="L22">            this.fecha = fecha;</span>
+<span class="fc" id="L23">            this.horaInicio = horaInicio;</span>
+<span class="fc" id="L24">            this.horaFin = horaFin;</span>
+<span class="fc" id="L25">        }</span>
+    }
+
+    // Almacena los horarios por su identificador
+<span class="fc" id="L29">    private HashMap&lt;Integer, Horario&gt; horarios = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L30">    private int siguienteId = 1;</span>
+
+    @Override
+    public boolean crearHorario(int idMedico, LocalDate fecha,
+                                LocalTime horaInicio, LocalTime horaFin) {
+
+        // Comprobar que los datos sean válidos
+<span class="fc bfc" id="L37" title="All 8 branches covered.">        if (idMedico &lt;= 0 || fecha == null ||</span>
+                horaInicio == null || horaFin == null) {
+<span class="fc" id="L39">            return false;</span>
+        }
+
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (fecha.isBefore(LocalDate.now())</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">                || !horaInicio.isBefore(horaFin)) {</span>
+<span class="fc" id="L44">            return false;</span>
+        }
+
+        // Evitar horarios solapados del mismo médico
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (Horario horario : horarios.values()) {</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (horario.idMedico == idMedico</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">                    &amp;&amp; horario.fecha.equals(fecha)</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">                    &amp;&amp; horaInicio.isBefore(horario.horaFin)</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">                    &amp;&amp; horaFin.isAfter(horario.horaInicio)) {</span>
+<span class="fc" id="L53">                return false;</span>
+            }
+<span class="fc" id="L55">        }</span>
+
+        // Guardar el nuevo horario
+<span class="fc" id="L58">        Horario horario = new Horario(siguienteId, idMedico, fecha,</span>
+                                     horaInicio, horaFin);
+<span class="fc" id="L60">        horarios.put(siguienteId, horario);</span>
+<span class="fc" id="L61">        siguienteId++;</span>
+
+<span class="fc" id="L63">        return true;</span>
+    }
+
+    @Override
+    public String consultarAgenda(int idMedico) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (idMedico &lt;= 0) {</span>
+<span class="fc" id="L69">            return &quot;ID de médico no válido&quot;;</span>
+        }
+
+<span class="fc" id="L72">        String resultado = &quot;&quot;;</span>
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (Horario horario : horarios.values()) {</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            if (horario.idMedico == idMedico) {</span>
+<span class="fc" id="L76">                resultado += &quot;Horario &quot; + horario.idHorario</span>
+                        + &quot; | Fecha: &quot; + horario.fecha
+                        + &quot; | Inicio: &quot; + horario.horaInicio
+                        + &quot; | Fin: &quot; + horario.horaFin + &quot;\n&quot;;
+            }
+<span class="fc" id="L81">        }</span>
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (resultado.isEmpty()) {</span>
+<span class="fc" id="L84">            return &quot;No hay horarios para este médico&quot;;</span>
+        }
+
+<span class="fc" id="L87">        return resultado;</span>
+    }
+
+    @Override
+    public boolean modificarHorario(int idHorario, LocalDate fecha,
+                                    LocalTime horaInicio, LocalTime horaFin) {
+
+<span class="fc" id="L94">        Horario horario = horarios.get(idHorario);</span>
+
+<span class="fc bfc" id="L96" title="All 8 branches covered.">        if (horario == null || fecha == null ||</span>
+                horaInicio == null || horaFin == null) {
+<span class="fc" id="L98">            return false;</span>
+        }
+
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (fecha.isBefore(LocalDate.now())</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">                || !horaInicio.isBefore(horaFin)) {</span>
+<span class="fc" id="L103">            return false;</span>
+        }
+
+        // Comprobar solapamientos, excluyendo el horario modificado
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        for (Horario otro : horarios.values()) {</span>
+<span class="fc bfc" id="L108" title="All 4 branches covered.">            if (otro.idHorario != idHorario</span>
+                    &amp;&amp; otro.idMedico == horario.idMedico
+<span class="fc bfc" id="L110" title="All 2 branches covered.">                    &amp;&amp; otro.fecha.equals(fecha)</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                    &amp;&amp; horaInicio.isBefore(otro.horaFin)</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                    &amp;&amp; horaFin.isAfter(otro.horaInicio)) {</span>
+<span class="fc" id="L113">                return false;</span>
+            }
+<span class="fc" id="L115">        }</span>
+
+<span class="fc" id="L117">        horario.fecha = fecha;</span>
+<span class="fc" id="L118">        horario.horaInicio = horaInicio;</span>
+<span class="fc" id="L119">        horario.horaFin = horaFin;</span>
+
+<span class="fc" id="L121">        return true;</span>
+    }
+
+    @Override
+    public boolean eliminarHorario(int idHorario) {
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        return horarios.remove(idHorario) != null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

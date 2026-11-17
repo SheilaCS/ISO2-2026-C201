@@ -1,2 +1,6 @@
+com\sescam\radiodiagnostico\agendas\GestionAgendasServiceImpl.class
+com\sescam\radiodiagnostico\agendas\GestionAgendasServiceImpl$Horario.class
+com\sescam\radiodiagnostico\agendas\IGestionAgendasService.class
 com\sescam\radiodiagnostico\pruebas\IGestionPruebasService.class
+com\sescam\radiodiagnostico\agendas\GestionAgendasHttpServer.class
 com\sescam\radiodiagnostico\pruebas\GestionPruebasServiceImpl.class

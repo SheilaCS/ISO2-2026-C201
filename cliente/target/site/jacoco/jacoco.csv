@@ -1,0 +1,5 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+cliente,com.sescam.radiodiagnostico.cliente.informes,InformeGUI,110,0,0,0,25,0,3,0,3,0
+cliente,com.sescam.radiodiagnostico.cliente.agendas,AgendasHttpClient,0,102,0,0,0,33,0,8,0,8
+cliente,com.sescam.radiodiagnostico.cliente.agendas,GestionAgendasGUI,0,435,0,6,0,112,0,18,0,15
+cliente,com.sescam.radiodiagnostico.cliente.agendas,ValidacionesAgendas,0,64,0,12,0,21,0,11,0,5

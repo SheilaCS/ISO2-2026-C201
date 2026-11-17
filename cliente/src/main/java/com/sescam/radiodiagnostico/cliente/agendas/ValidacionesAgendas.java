@@ -18,7 +18,7 @@ public class ValidacionesAgendas {
         }
     }
 
-    // Comprobar que la fecha tenga un formato correcto
+    // Comprobar que la fecha sea correcta
     // y que no sea anterior a hoy
     public static boolean validarFecha(String texto) {
         try {

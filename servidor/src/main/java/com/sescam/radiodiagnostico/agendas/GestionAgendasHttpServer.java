@@ -18,14 +18,22 @@ public class GestionAgendasHttpServer {
     private static GestionAgendasServiceImpl servicio =
             new GestionAgendasServiceImpl();
 
-    public static void main(String[] args) throws IOException {
+    // Guardar la referencia al servidor principal
+    static HttpServer servidorPrincipal;
 
-        // Puerto 8081 para evitar conflictos con citas
+    // Crear el servidor utilizando el puerto indicado
+    // El puerto 0 permite utilizar uno libre para las pruebas
+    public static HttpServer crearServidor(int puerto) throws IOException {
+
         HttpServer servidor = HttpServer.create(
-                new InetSocketAddress("localhost", 8081), 0);
+                new InetSocketAddress("localhost", puerto), 0);
 
-        // Crear un horario
+        // -----------------------------------------
+        // CREAR HORARIO
+        // -----------------------------------------
+
         servidor.createContext("/agendas/crear", exchange -> {
+
             if (!exchange.getRequestMethod().equals("POST")) {
                 responder(exchange, 405, "Metodo no permitido");
                 return;
@@ -51,8 +59,12 @@ public class GestionAgendasHttpServer {
             }
         });
 
-        // Consultar la agenda de un medico
+        // -----------------------------------------
+        // CONSULTAR AGENDA
+        // -----------------------------------------
+
         servidor.createContext("/agendas/consultar", exchange -> {
+
             if (!exchange.getRequestMethod().equals("GET")) {
                 responder(exchange, 405, "Metodo no permitido");
                 return;
@@ -60,17 +72,23 @@ public class GestionAgendasHttpServer {
 
             try {
                 HashMap<String, String> datos = leerParametros(exchange);
+
                 int idMedico = Integer.parseInt(datos.get("idMedico"));
 
-                responder(exchange, 200, servicio.consultarAgenda(idMedico));
+                responder(exchange, 200,
+                        servicio.consultarAgenda(idMedico));
 
             } catch (Exception e) {
                 responder(exchange, 400, "Datos incorrectos");
             }
         });
 
-        // Modificar un horario
+        // -----------------------------------------
+        // MODIFICAR HORARIO
+        // -----------------------------------------
+
         servidor.createContext("/agendas/modificar", exchange -> {
+
             if (!exchange.getRequestMethod().equals("POST")) {
                 responder(exchange, 405, "Metodo no permitido");
                 return;
@@ -96,8 +114,12 @@ public class GestionAgendasHttpServer {
             }
         });
 
-        // Eliminar un horario
+        // -----------------------------------------
+        // ELIMINAR HORARIO
+        // -----------------------------------------
+
         servidor.createContext("/agendas/eliminar", exchange -> {
+
             if (!exchange.getRequestMethod().equals("POST")) {
                 responder(exchange, 405, "Metodo no permitido");
                 return;
@@ -105,6 +127,7 @@ public class GestionAgendasHttpServer {
 
             try {
                 HashMap<String, String> datos = leerParametros(exchange);
+
                 int idHorario = Integer.parseInt(datos.get("idHorario"));
 
                 boolean correcto = servicio.eliminarHorario(idHorario);
@@ -118,21 +141,46 @@ public class GestionAgendasHttpServer {
             }
         });
 
-        servidor.start();
-
-        System.out.println("Servidor de agendas iniciado en http://localhost:8081");
+        // Devolver el servidor sin arrancarlo
+        return servidor;
     }
 
-    // Leer parametros enviados por GET o POST
+    // -----------------------------------------
+    // EJECUTAR EL SERVIDOR
+    // -----------------------------------------
+
+    public static void main(String[] args) throws IOException {
+
+        // Puerto 8081 para la aplicacion normal
+        // Durante las pruebas se puede configurar otro puerto
+        int puerto = Integer.getInteger("agendas.puerto", 8081);
+
+        servidorPrincipal = crearServidor(puerto);
+
+        servidorPrincipal.start();
+
+        System.out.println(
+                "Servidor de agendas iniciado en http://localhost:"
+                + servidorPrincipal.getAddress().getPort());
+    }
+
+    // -----------------------------------------
+    // LEER PARAMETROS GET O POST
+    // -----------------------------------------
+
     private static HashMap<String, String> leerParametros(
             HttpExchange exchange) throws IOException {
 
         String texto;
 
         if (exchange.getRequestMethod().equals("GET")) {
+
             texto = exchange.getRequestURI().getRawQuery();
+
         } else {
-            texto = new String(exchange.getRequestBody().readAllBytes(),
+
+            texto = new String(
+                    exchange.getRequestBody().readAllBytes(),
                     StandardCharsets.UTF_8);
         }
 
@@ -143,11 +191,14 @@ public class GestionAgendasHttpServer {
         }
 
         for (String parametro : texto.split("&")) {
+
             String[] partes = parametro.split("=", 2);
 
             if (partes.length == 2) {
+
                 String clave = URLDecoder.decode(
                         partes[0], StandardCharsets.UTF_8);
+
                 String valor = URLDecoder.decode(
                         partes[1], StandardCharsets.UTF_8);
 
@@ -158,12 +209,16 @@ public class GestionAgendasHttpServer {
         return datos;
     }
 
-    // Enviar una respuesta HTTP al cliente
+    // -----------------------------------------
+    // ENVIAR RESPUESTA HTTP
+    // -----------------------------------------
+
     private static void responder(HttpExchange exchange,
                                   int codigo, String mensaje)
             throws IOException {
 
-        byte[] respuesta = mensaje.getBytes(StandardCharsets.UTF_8);
+        byte[] respuesta = mensaje.getBytes(
+                StandardCharsets.UTF_8);
 
         exchange.getResponseHeaders().set(
                 "Content-Type", "text/plain; charset=UTF-8");

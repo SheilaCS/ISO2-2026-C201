@@ -12,9 +12,20 @@ import java.nio.charset.StandardCharsets;
 public class AgendasHttpClient {
 
     // Direccion del servidor de agendas
-    private static final String URL_BASE = "http://localhost:8081/agendas";
+    private final String urlBase;
 
-    private HttpClient cliente = HttpClient.newHttpClient();
+    // Cliente utilizado para enviar peticiones HTTP
+    private final HttpClient cliente = HttpClient.newHttpClient();
+
+    // Constructor normal de la aplicacion
+    public AgendasHttpClient() {
+        this("http://localhost:8081/agendas");
+    }
+
+    // Constructor para utilizar un servidor de pruebas
+    public AgendasHttpClient(String urlBase) {
+        this.urlBase = urlBase;
+    }
 
     // Crear un horario para un medico
     public String crearHorario(int idMedico, String fecha,
@@ -34,7 +45,7 @@ public class AgendasHttpClient {
             throws IOException, InterruptedException {
 
         HttpRequest peticion = HttpRequest.newBuilder()
-                .uri(URI.create(URL_BASE + "/consultar?idMedico=" + idMedico))
+                .uri(URI.create(urlBase + "/consultar?idMedico=" + idMedico))
                 .GET()
                 .build();
 
@@ -69,7 +80,7 @@ public class AgendasHttpClient {
             throws IOException, InterruptedException {
 
         HttpRequest peticion = HttpRequest.newBuilder()
-                .uri(URI.create(URL_BASE + ruta))
+                .uri(URI.create(urlBase + ruta))
                 .header("Content-Type",
                         "application/x-www-form-urlencoded; charset=UTF-8")
                 .POST(HttpRequest.BodyPublishers.ofString(datos))
