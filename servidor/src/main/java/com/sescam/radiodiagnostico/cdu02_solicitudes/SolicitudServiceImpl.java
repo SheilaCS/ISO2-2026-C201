@@ -23,4 +23,5 @@ public class SolicitudServiceImpl implements ISolicitudService {
         // Si pasa todas las validaciones, se registra
         return true;
     }
+    
 }
