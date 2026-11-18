@@ -2,7 +2,10 @@ package com.sescam.radiodiagnostico.cliente.parametros;
 
 import javax.swing.SwingUtilities;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ParametroGUITest {
     
@@ -29,4 +32,26 @@ public class ParametroGUITest {
         SwingUtilities.invokeAndWait(() -> ventana.dispose());
     }
 
+    @Test
+    void testMain() throws Exception {
+
+        ParametroGUI.main(new String[]{});
+
+        SwingUtilities.invokeAndWait(() -> {
+
+            ParametroGUI gui = null;
+
+            for (java.awt.Frame frame : java.awt.Frame.getFrames()) {
+                if (frame instanceof ParametroGUI) {
+                    gui = (ParametroGUI) frame;
+                    break;
+                }
+            }
+
+            Assertions.assertNotNull(gui);
+            Assertions.assertTrue(gui.isVisible());
+
+            gui.dispose();
+        });
+    }
 }
