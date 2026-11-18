@@ -1,0 +1,4 @@
+com\sescam\radiodiagnostico\cliente\citas\ValidacionesCitasTest.class
+com\sescam\radiodiagnostico\cliente\solicitudes\SolicitudGUITest.class
+com\sescam\radiodiagnostico\cliente\autenticacion\ServicioAutenticacionServidorTest.class
+com\sescam\radiodiagnostico\cliente\parametros\ParametroGUITest.class
