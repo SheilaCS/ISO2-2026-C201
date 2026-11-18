@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.sescam.radiodiagnostico.agendas.GestionAgendasHttpServerTest
--------------------------------------------------------------------------------
-Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.005 s -- in com.sescam.radiodiagnostico.agendas.GestionAgendasHttpServerTest

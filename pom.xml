@@ -17,7 +17,6 @@
         </site>
     </distributionManagement>
 
-
     <modules>
         <module>servidor</module>
         <module>cliente</module>
@@ -104,7 +103,7 @@
 
         </plugins>
     </build>
-    
+
     <!-- PASO 3: Informes de pruebas -->
     <reporting>
         <plugins>
@@ -133,6 +132,5 @@
             </plugin>
         </plugins>
     </reporting>
-
 
 </project>
