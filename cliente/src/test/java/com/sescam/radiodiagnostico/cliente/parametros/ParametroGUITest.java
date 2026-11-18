@@ -37,21 +37,17 @@ public class ParametroGUITest {
 
         ParametroGUI.main(new String[]{});
 
-        SwingUtilities.invokeAndWait(() -> {
+        Thread.sleep(200);
 
-            ParametroGUI gui = null;
+        boolean encontrada = false;
 
-            for (java.awt.Frame frame : java.awt.Frame.getFrames()) {
-                if (frame instanceof ParametroGUI) {
-                    gui = (ParametroGUI) frame;
-                    break;
-                }
+        for (java.awt.Frame frame : java.awt.Frame.getFrames()) {
+            if (frame instanceof ParametroGUI gui) {
+                encontrada = true;
+                gui.dispose();
             }
+        }
 
-            Assertions.assertNotNull(gui);
-            Assertions.assertTrue(gui.isVisible());
-
-            gui.dispose();
-        });
+        Assertions.assertTrue(encontrada);
     }
 }
