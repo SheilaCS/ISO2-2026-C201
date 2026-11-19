@@ -20,15 +20,42 @@ import java.util.Map;
  */
 public class GestionCitasHttpServer {
 
-    public static void main(String[] args) throws IOException {
+    // Referencia al servidor principal para poder detenerlo en las pruebas
+    static HttpServer servidorPrincipal;
 
-        // Servicio que contiene la logica de las citas
-        IGestionCitasService servicio = new GestionCitasServiceImpl();
+    /**
+     * Crear un servidor con el servicio normal de citas.
+     *
+     * Puerto 8080: aplicacion normal.
+     * Puerto 0: puerto libre para pruebas JUnit.
+     */
+    public static HttpServer crearServidor(int puerto)
+            throws IOException {
+
+        return crearServidor(
+                puerto,
+                new GestionCitasServiceImpl());
+    }
+
+    /**
+     * Crear un servidor con un servicio configurable.
+     *
+     * Permite utilizar un servicio simulado en las pruebas
+     * para comprobar errores internos.
+     */
+    static HttpServer crearServidor(
+            int puerto,
+            IGestionCitasService servicio)
+            throws IOException {
 
         // Crear servidor HTTP local
         HttpServer servidor = HttpServer.create(
-            new InetSocketAddress("127.0.0.1", 8080), 0
+                new InetSocketAddress("127.0.0.1", puerto), 0
         );
+
+        // -----------------------------------------
+        // OPERACIONES HTTP
+        // -----------------------------------------
 
         servidor.createContext("/citas", peticion -> {
 
@@ -36,127 +63,204 @@ public class GestionCitasHttpServer {
             int codigo = 200;
 
             try {
-                String ruta = peticion.getRequestURI().getPath();
-                String metodo = peticion.getRequestMethod();
+
+                String ruta =
+                        peticion.getRequestURI().getPath();
+
+                String metodo =
+                        peticion.getRequestMethod();
 
                 Map<String, String> datos = leerParametros(
-                    peticion.getRequestURI().getRawQuery()
+                        peticion.getRequestURI().getRawQuery()
                 );
+
+                // -----------------------------------------
+                // COMPROBAR SERVIDOR
+                // -----------------------------------------
 
                 if (ruta.equals("/citas")
                         && metodo.equals("GET")) {
 
-                    respuesta = "Servidor de citas SESCAM funcionando";
+                    respuesta =
+                            "Servidor de citas SESCAM funcionando";
+
+                // -----------------------------------------
+                // ASIGNAR CITA
+                // -----------------------------------------
 
                 } else if (ruta.equals("/citas/asignar")
                         && metodo.equals("POST")) {
 
                     datos.putAll(leerParametros(
-                        new String(
-                            peticion.getRequestBody().readAllBytes(),
-                            StandardCharsets.UTF_8
-                        )
+                            new String(
+                                    peticion.getRequestBody()
+                                            .readAllBytes(),
+                                    StandardCharsets.UTF_8
+                            )
                     ));
 
                     boolean correcto = servicio.asignarCita(
-                        Integer.parseInt(datos.get("solicitud")),
-                        Integer.parseInt(datos.get("paciente")),
-                        datos.get("fecha"),
-                        datos.get("hora")
+                            Integer.parseInt(
+                                    datos.get("solicitud")),
+                            Integer.parseInt(
+                                    datos.get("paciente")),
+                            datos.get("fecha"),
+                            datos.get("hora")
                     );
 
                     respuesta = correcto
-                        ? "Cita asignada correctamente"
-                        : "No se ha podido asignar la cita";
+                            ? "Cita asignada correctamente"
+                            : "No se ha podido asignar la cita";
+
+                // -----------------------------------------
+                // REPROGRAMAR CITA
+                // -----------------------------------------
 
                 } else if (ruta.equals("/citas/reprogramar")
                         && metodo.equals("POST")) {
 
                     datos.putAll(leerParametros(
-                        new String(
-                            peticion.getRequestBody().readAllBytes(),
-                            StandardCharsets.UTF_8
-                        )
+                            new String(
+                                    peticion.getRequestBody()
+                                            .readAllBytes(),
+                                    StandardCharsets.UTF_8
+                            )
                     ));
 
                     boolean correcto = servicio.reprogramarCita(
-                        Integer.parseInt(datos.get("id")),
-                        datos.get("fecha"),
-                        datos.get("hora")
+                            Integer.parseInt(datos.get("id")),
+                            datos.get("fecha"),
+                            datos.get("hora")
                     );
 
                     respuesta = correcto
-                        ? "Cita reprogramada correctamente"
-                        : "No se ha podido reprogramar la cita";
+                            ? "Cita reprogramada correctamente"
+                            : "No se ha podido reprogramar la cita";
+
+                // -----------------------------------------
+                // CANCELAR CITA
+                // -----------------------------------------
 
                 } else if (ruta.equals("/citas/cancelar")
                         && metodo.equals("POST")) {
 
                     datos.putAll(leerParametros(
-                        new String(
-                            peticion.getRequestBody().readAllBytes(),
-                            StandardCharsets.UTF_8
-                        )
+                            new String(
+                                    peticion.getRequestBody()
+                                            .readAllBytes(),
+                                    StandardCharsets.UTF_8
+                            )
                     ));
 
                     boolean correcto = servicio.cancelarCita(
-                        Integer.parseInt(datos.get("id"))
+                            Integer.parseInt(datos.get("id"))
                     );
 
                     respuesta = correcto
-                        ? "Cita cancelada correctamente"
-                        : "No se ha podido cancelar la cita";
+                            ? "Cita cancelada correctamente"
+                            : "No se ha podido cancelar la cita";
+
+                // -----------------------------------------
+                // CONSULTAR CITA
+                // -----------------------------------------
 
                 } else if (ruta.equals("/citas/consultar")
                         && metodo.equals("GET")) {
 
                     respuesta = servicio.consultarCita(
-                        Integer.parseInt(datos.get("id"))
+                            Integer.parseInt(datos.get("id"))
                     );
 
+                // -----------------------------------------
+                // RUTA O METODO INCORRECTO
+                // -----------------------------------------
+
                 } else {
+
                     codigo = 404;
                     respuesta = "Operacion no encontrada";
                 }
 
-            } catch (IllegalArgumentException | NullPointerException e) {
+            } catch (IllegalArgumentException e) {
+
                 codigo = 400;
                 respuesta = "Datos incorrectos o incompletos";
+
             } catch (Exception e) {
+
                 codigo = 500;
                 respuesta = "Error interno del servidor";
+
                 e.printStackTrace();
             }
 
+            // Enviar la respuesta HTTP
             enviarRespuesta(peticion, codigo, respuesta);
         });
 
-        servidor.start();
-
-        System.out.println("Servidor de citas iniciado");
-        System.out.println("http://localhost:8080/citas");
+        // Devolver el servidor sin arrancarlo
+        return servidor;
     }
 
-    // Convertir parametros HTTP en pares clave-valor
-    private static Map<String, String> leerParametros(String texto) {
+    // -----------------------------------------
+    // METODO PRINCIPAL
+    // -----------------------------------------
+
+    /**
+     * Iniciar normalmente el servidor de citas.
+     *
+     * El puerto predeterminado es 8080.
+     * Para las pruebas se puede configurar otro puerto.
+     */
+    public static void main(String[] args) throws IOException {
+
+        // Usar 8080 normalmente y permitir
+        // la propiedad citas.puerto durante las pruebas
+        int puerto = Integer.getInteger(
+                "citas.puerto", 8080);
+
+        servidorPrincipal = crearServidor(puerto);
+
+        servidorPrincipal.start();
+
+        System.out.println("Servidor de citas iniciado");
+
+        System.out.println(
+                "http://localhost:"
+                + servidorPrincipal.getAddress().getPort()
+                + "/citas");
+    }
+
+    // -----------------------------------------
+    // LEER PARAMETROS HTTP
+    // -----------------------------------------
+
+    /**
+     * Convertir parametros HTTP en pares clave-valor.
+     */
+    private static Map<String, String> leerParametros(
+            String texto) {
 
         Map<String, String> parametros = new HashMap<>();
 
+        // Comprobar si no hay parametros
         if (texto == null || texto.isEmpty()) {
             return parametros;
         }
 
+        // Recorrer los parametros recibidos
         for (String parte : texto.split("&")) {
 
             String[] dato = parte.split("=", 2);
 
             if (dato.length == 2) {
+
                 String clave = URLDecoder.decode(
-                    dato[0], StandardCharsets.UTF_8
+                        dato[0], StandardCharsets.UTF_8
                 );
 
                 String valor = URLDecoder.decode(
-                    dato[1], StandardCharsets.UTF_8
+                        dato[1], StandardCharsets.UTF_8
                 );
 
                 parametros.put(clave, valor);
@@ -166,20 +270,33 @@ public class GestionCitasHttpServer {
         return parametros;
     }
 
-    // Enviar la respuesta al cliente HTTP
+    // -----------------------------------------
+    // ENVIAR RESPUESTA HTTP
+    // -----------------------------------------
+
+    /**
+     * Enviar la respuesta al cliente HTTP.
+     */
     private static void enviarRespuesta(
-            HttpExchange peticion, int codigo, String respuesta)
+            HttpExchange peticion,
+            int codigo,
+            String respuesta)
             throws IOException {
 
-        byte[] contenido = respuesta.getBytes(StandardCharsets.UTF_8);
+        byte[] contenido = respuesta.getBytes(
+                StandardCharsets.UTF_8);
 
         peticion.getResponseHeaders().set(
-            "Content-Type", "text/plain; charset=UTF-8"
+                "Content-Type",
+                "text/plain; charset=UTF-8"
         );
 
-        peticion.sendResponseHeaders(codigo, contenido.length);
+        peticion.sendResponseHeaders(
+                codigo, contenido.length);
 
-        try (OutputStream salida = peticion.getResponseBody()) {
+        try (OutputStream salida =
+                     peticion.getResponseBody()) {
+
             salida.write(contenido);
         }
     }
