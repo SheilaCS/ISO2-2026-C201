@@ -30,16 +30,27 @@ public class GestionCitasGUI extends JFrame {
     private JTable tablaCitas;
 
     // Cliente que envia las peticiones HTTP
-    private CitasHttpClient clienteHttp = new CitasHttpClient();
+    private final CitasHttpClient clienteHttp;
 
     // Colores de la interfaz
     private Color azul = new Color(20, 75, 115);
     private Color fondo = new Color(245, 248, 252);
 
     /**
-     * Constructor de la ventana de gestion de citas.
+     * Constructor utilizado por la aplicacion.
      */
     public GestionCitasGUI() {
+        this(new CitasHttpClient());
+    }
+
+    /**
+     * Constructor utilizado por las pruebas JUnit.
+     * Permite utilizar un cliente HTTP simulado.
+     */
+    GestionCitasGUI(CitasHttpClient clienteHttp) {
+
+        this.clienteHttp =
+                java.util.Objects.requireNonNull(clienteHttp);
 
         // CONFIGURACION DE LA VENTANA
 
@@ -264,9 +275,6 @@ public class GestionCitasGUI extends JFrame {
 
     /**
      * Comprueba que un ID sea un entero positivo.
-     *
-     * La comprobacion se realiza utilizando
-     * ValidacionesCitas, que tambien se prueba con JUnit.
      */
     private boolean validarId(
             String texto, String nombre) {
