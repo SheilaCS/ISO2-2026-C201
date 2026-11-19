@@ -53,4 +53,53 @@ public class SolicitudServiceImplTest {
         boolean resultado = service.solicitarPrueba("PAC-001", "TAC", null);
         assertFalse(resultado, "No se debe aceptar una prioridad nula");
     }
+
+    @Test
+    @DisplayName("Solicitud inválida con ID vacío")
+    void testSolicitudIdVacio() {
+        assertFalse(
+            service.solicitarPrueba("", "TAC", "URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Solicitud inválida con ID formado solo por espacios")
+    void testSolicitudIdEspacios() {
+        assertFalse(
+            service.solicitarPrueba("   ", "TAC", "URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Solicitud inválida con tipo de prueba nulo")
+    void testSolicitudTipoNulo() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", null, "URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Solicitud válida con prioridad PREFERENTE")
+    void testSolicitudPreferente() {
+        assertTrue(
+            service.solicitarPrueba("PAC-001", "TAC", "PREFERENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Solicitud válida con prioridad ORDINARIO")
+    void testSolicitudOrdinario() {
+        assertTrue(
+            service.solicitarPrueba("PAC-001", "TAC", "ORDINARIO")
+        );
+    }
+
+    @Test
+    @DisplayName("Solicitud inválida con prioridad vacía")
+    void testSolicitudPrioridadVacia() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", "TAC", "")
+        );
+    }
+
 }
