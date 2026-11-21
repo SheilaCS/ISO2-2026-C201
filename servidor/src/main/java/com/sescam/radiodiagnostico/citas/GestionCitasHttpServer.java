@@ -172,6 +172,92 @@ public class GestionCitasHttpServer {
                     );
 
                 // -----------------------------------------
+                // LISTAR LAS CITAS DE UN PACIENTE (RF02)
+                // -----------------------------------------
+
+                } else if (ruta.equals("/citas/paciente")
+                        && metodo.equals("GET")) {
+
+                    respuesta = servicio.listarCitasPaciente(
+                            Integer.parseInt(datos.get("paciente"))
+                    );
+
+                // -----------------------------------------
+                // CONFIRMAR UNA CITA PROPIA (RF02)
+                // -----------------------------------------
+
+                } else if (ruta.equals("/citas/paciente/confirmar")
+                        && metodo.equals("POST")) {
+
+                    datos.putAll(leerParametros(
+                            new String(
+                                    peticion.getRequestBody()
+                                            .readAllBytes(),
+                                    StandardCharsets.UTF_8
+                            )
+                    ));
+
+                    ResultadoOperacion resultado =
+                            servicio.confirmarCitaPaciente(
+                                    Integer.parseInt(datos.get("id")),
+                                    Integer.parseInt(
+                                            datos.get("paciente")));
+
+                    respuesta = resultado.getMensaje();
+
+                    // Un rechazo de negocio se indica con 409
+                    codigo = resultado.isCorrecto() ? 200 : 409;
+
+                // -----------------------------------------
+                // SOLICITAR EL CAMBIO DE UNA CITA PROPIA (RF02)
+                // -----------------------------------------
+
+                } else if (ruta.equals("/citas/paciente/cambio")
+                        && metodo.equals("POST")) {
+
+                    datos.putAll(leerParametros(
+                            new String(
+                                    peticion.getRequestBody()
+                                            .readAllBytes(),
+                                    StandardCharsets.UTF_8
+                            )
+                    ));
+
+                    ResultadoOperacion resultado =
+                            servicio.solicitarCambioCitaPaciente(
+                                    Integer.parseInt(datos.get("id")),
+                                    Integer.parseInt(
+                                            datos.get("paciente")),
+                                    datos.get("motivo"));
+
+                    respuesta = resultado.getMensaje();
+                    codigo = resultado.isCorrecto() ? 200 : 409;
+
+                // -----------------------------------------
+                // CANCELAR UNA CITA PROPIA (RF02)
+                // -----------------------------------------
+
+                } else if (ruta.equals("/citas/paciente/cancelar")
+                        && metodo.equals("POST")) {
+
+                    datos.putAll(leerParametros(
+                            new String(
+                                    peticion.getRequestBody()
+                                            .readAllBytes(),
+                                    StandardCharsets.UTF_8
+                            )
+                    ));
+
+                    ResultadoOperacion resultado =
+                            servicio.cancelarCitaPaciente(
+                                    Integer.parseInt(datos.get("id")),
+                                    Integer.parseInt(
+                                            datos.get("paciente")));
+
+                    respuesta = resultado.getMensaje();
+                    codigo = resultado.isCorrecto() ? 200 : 409;
+
+                // -----------------------------------------
                 // RUTA O METODO INCORRECTO
                 // -----------------------------------------
 
