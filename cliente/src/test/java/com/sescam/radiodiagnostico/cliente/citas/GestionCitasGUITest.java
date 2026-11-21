@@ -28,6 +28,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import org.junit.jupiter.api.AfterEach;
@@ -607,7 +608,8 @@ public class GestionCitasGUITest {
         pulsar("Asignar cita");
 
         assertEquals(0, clienteSimulado.asignaciones);
-        assertTrue(mensajeMostrado("Message"));
+        assertTrue(mensajeMostrado(
+                UIManager.getString("OptionPane.messageDialogTitle")));
     }
 
     @Test
