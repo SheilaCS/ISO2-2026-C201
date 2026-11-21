@@ -16,9 +16,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class GestionPacientesGUITest {
 
     private GestionPacientesGUI gui;
+    private Timer timerDialogos;
 
     @AfterEach
     void cerrarVentana() throws Exception {
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+            timerDialogos = null;
+        }
+        cerrarDialogosActivos();
         if (gui != null) {
             SwingUtilities.invokeAndWait(() -> gui.dispose());
             gui = null;
@@ -34,9 +40,12 @@ class GestionPacientesGUITest {
     }
 
     private void armarCierreAutomaticoDialogos() {
-        Timer timer = new Timer(60, e -> cerrarDialogosActivos());
-        timer.setRepeats(false);
-        timer.start();
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        timerDialogos = new Timer(50, e -> cerrarDialogosActivos());
+        timerDialogos.setRepeats(true);
+        timerDialogos.start();
     }
 
     private void setCampo(String nombreCampo, String valor) throws Exception {
@@ -104,6 +113,9 @@ class GestionPacientesGUITest {
         });
 
         Thread.sleep(150);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
         cerrarDialogosActivos();
         assertEquals(0, llamadasAlta.get());
     }
@@ -158,6 +170,9 @@ class GestionPacientesGUITest {
         });
 
         Thread.sleep(200);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
         cerrarDialogosActivos();
         assertEquals(1, altas.get());
 
@@ -172,6 +187,9 @@ class GestionPacientesGUITest {
         });
 
         Thread.sleep(200);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
         cerrarDialogosActivos();
         assertEquals(1, consultas.get());
         assertEquals("CIP001", getCampo("txtCip"));
@@ -193,10 +211,16 @@ class GestionPacientesGUITest {
         });
 
         Thread.sleep(200);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
         cerrarDialogosActivos();
         assertEquals(1, modificaciones.get());
 
-        Timer confirmarBaja = new Timer(50, e -> {
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        timerDialogos = new Timer(50, e -> {
             for (Window w : Window.getWindows()) {
                 if (w instanceof JDialog dialog && dialog.isShowing()) {
                     JButton yesBtn = buscarBoton(dialog, "Yes");
@@ -211,12 +235,12 @@ class GestionPacientesGUITest {
                 }
             }
         });
-        confirmarBaja.setRepeats(false);
+        timerDialogos.setRepeats(true);
 
         SwingUtilities.invokeAndWait(() -> {
             try {
                 setCampo("txtId", "10");
-                confirmarBaja.start();
+                timerDialogos.start();
                 invocarMetodo("darBajaPaciente");
             } catch (Exception ex) {
                 fail(ex);
@@ -224,6 +248,7 @@ class GestionPacientesGUITest {
         });
 
         Thread.sleep(250);
+        timerDialogos.stop();
         cerrarDialogosActivos();
         assertEquals(1, bajas.get());
     }
@@ -231,11 +256,11 @@ class GestionPacientesGUITest {
     @Test
     void seleccionaFilaEnTablaYManejaErroresDeSwingWorker() throws Exception {
         PacientesHttpClient errorClient = new PacientesHttpClient("http://localhost:0/pacientes", "", "") {
-    @Override
-    public String consultarPorCip(String cip) throws IOException {
-        throw new IOException("Fallo de red simulado");
-    }
-};
+            @Override
+            public String consultarPorCip(String cip) throws IOException {
+                throw new IOException("Fallo de red simulado");
+            }
+        };
 
         SwingUtilities.invokeAndWait(() -> {
             gui = new GestionPacientesGUI(errorClient);
@@ -265,6 +290,9 @@ class GestionPacientesGUITest {
         });
 
         Thread.sleep(200);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
         cerrarDialogosActivos();
     }
 
@@ -284,6 +312,9 @@ class GestionPacientesGUITest {
         });
 
         Thread.sleep(150);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
         cerrarDialogosActivos();
     }
 
