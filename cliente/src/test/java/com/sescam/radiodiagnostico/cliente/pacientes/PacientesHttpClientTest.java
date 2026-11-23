@@ -3,16 +3,19 @@ package com.sescam.radiodiagnostico.cliente.pacientes;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("Cliente HTTP de pacientes (CDU4)")
 class PacientesHttpClientTest {
 
     private HttpServer servidor;
@@ -22,7 +25,7 @@ class PacientesHttpClientTest {
     private final AtomicReference<String> ultimoCuerpo = new AtomicReference<>();
     private final AtomicReference<String> ultimaAuth = new AtomicReference<>();
     private int codigoRespuesta = 200;
-    private String cuerpoRespuesta = "Operacion realizada correctamente.";
+    private String cuerpoRespuesta = "id=11111111-1111-4111-8111-111111111111&cip=CIP99A&estado=ACTIVO";
 
     @BeforeEach
     void iniciarServidor() throws IOException {
@@ -56,8 +59,9 @@ class PacientesHttpClientTest {
     }
 
     @Test
+    @DisplayName("Envía POST en alta de paciente con autenticación Basic y CIP normalizado")
     void altaPacienteEnviaPostConAuthYDatosNormalizados() throws Exception {
-        PacientesHttpClient client = new PacientesHttpClient(urlBase, "admin", "1234");
+        PacientesHttpClient client = new PacientesHttpClient(urlBase, "administrativo.demo", "1234");
         String resp = client.altaPaciente("  cip99a ", "Ana", "Lopez", "1995-03-10");
 
         assertEquals("POST", ultimoMetodo.get());
@@ -66,10 +70,11 @@ class PacientesHttpClientTest {
         assertTrue(ultimaAuth.get().startsWith("Basic "));
         assertTrue(ultimoCuerpo.get().contains("cip=CIP99A"));
         assertTrue(ultimoCuerpo.get().contains("nombre=Ana"));
-        assertEquals("Operacion realizada correctamente.", resp);
+        assertEquals(cuerpoRespuesta, resp);
     }
 
     @Test
+    @DisplayName("Devuelve mensaje por defecto cuando el servidor responde 200 con cuerpo vacío")
     void respuesta200VaciaDevuelveMensajePorDefecto() throws Exception {
         codigoRespuesta = 200;
         cuerpoRespuesta = "   ";
@@ -83,8 +88,9 @@ class PacientesHttpClientTest {
     }
 
     @Test
+    @DisplayName("Envía GET en consulta por CIP y aplica autenticación cuando solo hay contraseña")
     void consultarPorCipEnviaGetConQueryYAuthSoloPassword() throws Exception {
-        cuerpoRespuesta = "ID: 1 | CIP: CIP99A";
+        cuerpoRespuesta = "id=22222222-2222-4222-8222-222222222222&cip=CIP99A&nombre=Ana&apellidos=Lopez&fechaNacimiento=1995-03-10&estado=ACTIVO";
         PacientesHttpClient client = new PacientesHttpClient(urlBase, null, null);
         client.setCredenciales(null, "soloPass");
         String resp = client.consultarPorCip("cip99a");
@@ -93,32 +99,37 @@ class PacientesHttpClientTest {
         assertEquals("/pacientes?cip=CIP99A", ultimaRuta.get());
         assertNotNull(ultimaAuth.get());
         assertTrue(ultimaAuth.get().startsWith("Basic "));
-        assertEquals("ID: 1 | CIP: CIP99A", resp);
+        assertTrue(resp.contains("CIP99A"));
     }
 
     @Test
-    void modificarPacienteEnviaPutConId() throws Exception {
-        PacientesHttpClient client = new PacientesHttpClient(urlBase, "admin", "1234");
-        client.setCredenciales("admin2", "abcd");
-        String resp = client.modificarPaciente(5, "Ana Maria", "Lopez Ruiz", "1995-03-10");
+    @DisplayName("Envía PUT en modificación de paciente utilizando UUID en la ruta")
+    void modificarPacienteEnviaPutConUuid() throws Exception {
+        String uuid = UUID.randomUUID().toString();
+        PacientesHttpClient client = new PacientesHttpClient(urlBase, "administrativo.demo", "1234");
+        client.setCredenciales("administrativo.demo", "abcd");
+        String resp = client.modificarPaciente(uuid, "Ana Maria", "Lopez Ruiz", "1995-03-10");
 
         assertEquals("PUT", ultimoMetodo.get());
-        assertEquals("/pacientes/5", ultimaRuta.get());
+        assertEquals("/pacientes/" + uuid, ultimaRuta.get());
         assertTrue(ultimoCuerpo.get().contains("nombre=Ana+Maria"));
-        assertEquals("Operacion realizada correctamente.", resp);
+        assertEquals(cuerpoRespuesta, resp);
     }
 
     @Test
-    void darBajaPacienteEnviaDeleteConId() throws Exception {
-        PacientesHttpClient client = new PacientesHttpClient(urlBase, "admin", "1234");
-        String resp = client.darBajaPaciente(7);
+    @DisplayName("Envía DELETE en baja lógica de paciente utilizando UUID en la ruta")
+    void darBajaPacienteEnviaDeleteConUuid() throws Exception {
+        String uuid = UUID.randomUUID().toString();
+        PacientesHttpClient client = new PacientesHttpClient(urlBase, "administrativo.demo", "1234");
+        String resp = client.darBajaPaciente(uuid);
 
         assertEquals("DELETE", ultimoMetodo.get());
-        assertEquals("/pacientes/7", ultimaRuta.get());
-        assertEquals("Operacion realizada correctamente.", resp);
+        assertEquals("/pacientes/" + uuid, ultimaRuta.get());
+        assertEquals(cuerpoRespuesta, resp);
     }
 
     @Test
+    @DisplayName("Formatea respuestas de error HTTP 401, 403 y >=400 con y sin cuerpo")
     void manejaErroresHttp401_403_y_400ConYCuerpoVacio() throws Exception {
         PacientesHttpClient client = new PacientesHttpClient(urlBase, "user", "bad");
 
@@ -135,15 +146,16 @@ class PacientesHttpClientTest {
         assertEquals("Error 403: Acceso denegado. Se requiere rol ADMINISTRATIVO.", client.consultarPorCip("CIP1"));
 
         codigoRespuesta = 400;
-        cuerpoRespuesta = "CIP duplicado";
-        assertEquals("Error 400: CIP duplicado", client.altaPaciente("CIP1", "Juan", "Perez", "1990-01-01"));
+        cuerpoRespuesta = "Datos+incorrectos+o+incompletos";
+        assertEquals("Error 400: Datos+incorrectos+o+incompletos", client.altaPaciente("CIP1", "Juan", "Perez", "1990-01-01"));
         cuerpoRespuesta = "";
         assertEquals("Error 400: Peticion rechazada.", client.altaPaciente("CIP1", "Juan", "Perez", "1990-01-01"));
     }
 
     @Test
+    @DisplayName("Construye instancias con los constructores por defecto configurados en el puerto 8084")
     void constructorPorDefectoNoFalla() {
         assertNotNull(new PacientesHttpClient());
-        assertNotNull(new PacientesHttpClient("admin", "1234"));
+        assertNotNull(new PacientesHttpClient("administrativo.demo", "1234"));
     }
 }

@@ -2,6 +2,7 @@ package com.sescam.radiodiagnostico.cliente.pacientes;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.UUID;
 
 /**
  * Validaciones del lado del cliente para CDU4 (RF12 - Gestion de pacientes).
@@ -9,16 +10,16 @@ import java.time.format.DateTimeParseException;
 public class ValidacionesPacientes {
 
     /**
-     * Comprueba que el identificador sea un entero positivo.
+     * Comprueba que el identificador sea un UUID valido.
      */
     public static boolean validarId(String texto) {
         if (texto == null || texto.isBlank()) {
             return false;
         }
         try {
-            int id = Integer.parseInt(texto.trim());
-            return id > 0;
-        } catch (NumberFormatException e) {
+            UUID.fromString(texto.trim());
+            return true;
+        } catch (IllegalArgumentException e) {
             return false;
         }
     }

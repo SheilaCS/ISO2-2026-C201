@@ -1,6 +1,7 @@
 package com.sescam.radiodiagnostico.cliente.pacientes;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -9,10 +10,12 @@ import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("Interfaz gráfica de gestión de pacientes (CDU4)")
 class GestionPacientesGUITest {
 
     private GestionPacientesGUI gui;
@@ -69,6 +72,7 @@ class GestionPacientesGUITest {
     }
 
     @Test
+    @DisplayName("Inicializa correctamente la ventana y su título")
     void inicializaComponentesCorrectamente() throws Exception {
         SwingUtilities.invokeAndWait(() -> gui = new GestionPacientesGUI());
         assertNotNull(gui);
@@ -76,6 +80,7 @@ class GestionPacientesGUITest {
     }
 
     @Test
+    @DisplayName("Valida los campos obligatorios antes de ejecutar alta o consulta")
     void validaCamposAntesDeAltaYConsulta() throws Exception {
         AtomicInteger llamadasAlta = new AtomicInteger(0);
         PacientesHttpClient fakeClient = new PacientesHttpClient("http://localhost:0/pacientes", "", "") {
@@ -121,7 +126,9 @@ class GestionPacientesGUITest {
     }
 
     @Test
+    @DisplayName("Ejecuta alta, consulta cargando tabla, modificación con UUID y baja lógica")
     void ejecutaAltaConsultaModificacionYBajaConClienteSimulado() throws Exception {
+        String uuidPaciente = UUID.randomUUID().toString();
         AtomicInteger altas = new AtomicInteger(0);
         AtomicInteger consultas = new AtomicInteger(0);
         AtomicInteger modificaciones = new AtomicInteger(0);
@@ -131,32 +138,35 @@ class GestionPacientesGUITest {
             @Override
             public String altaPaciente(String cip, String nombre, String apellidos, String fechaNacimiento) {
                 altas.incrementAndGet();
-                return "Paciente creado";
+                return "id=" + uuidPaciente + "&cip=" + cip + "&nombre=" + nombre
+                        + "&apellidos=" + apellidos + "&fechaNacimiento=" + fechaNacimiento + "&estado=ACTIVO";
             }
 
             @Override
             public String consultarPorCip(String cip) {
                 consultas.incrementAndGet();
-                return "Paciente encontrado: " + cip;
+                return "id=" + uuidPaciente + "&cip=" + cip
+                        + "&nombre=Luis&apellidos=Garcia&fechaNacimiento=1985-04-20&estado=ACTIVO";
             }
 
             @Override
-            public String modificarPaciente(int id, String nombre, String apellidos, String fechaNacimiento) {
+            public String modificarPaciente(String id, String nombre, String apellidos, String fechaNacimiento) {
                 modificaciones.incrementAndGet();
-                return "Paciente modificado: " + id;
+                return "id=" + id + "&cip=CIP001&nombre=" + nombre
+                        + "&apellidos=" + apellidos + "&fechaNacimiento=" + fechaNacimiento + "&estado=ACTIVO";
             }
 
             @Override
-            public String darBajaPaciente(int id) {
+            public String darBajaPaciente(String id) {
                 bajas.incrementAndGet();
-                return "Baja realizada: " + id;
+                return "id=" + id + "&estado=BAJA";
             }
         };
 
         SwingUtilities.invokeAndWait(() -> {
             gui = new GestionPacientesGUI(fakeClient);
             try {
-                setCampo("txtUsuario", "admin");
+                setCampo("txtUsuario", "administrativo.demo");
                 setCampo("txtCip", " cip001 ");
                 setCampo("txtNombre", "Luis");
                 setCampo("txtApellidos", "Garcia");
@@ -175,6 +185,7 @@ class GestionPacientesGUITest {
         }
         cerrarDialogosActivos();
         assertEquals(1, altas.get());
+        assertEquals(uuidPaciente, getCampo("txtId"));
 
         SwingUtilities.invokeAndWait(() -> {
             try {
@@ -196,7 +207,6 @@ class GestionPacientesGUITest {
 
         SwingUtilities.invokeAndWait(() -> {
             try {
-                setCampo("txtId", "10");
                 setCampo("txtNombre", "");
                 armarCierreAutomaticoDialogos();
                 invocarMetodo("modificarPaciente");
@@ -239,7 +249,6 @@ class GestionPacientesGUITest {
 
         SwingUtilities.invokeAndWait(() -> {
             try {
-                setCampo("txtId", "10");
                 timerDialogos.start();
                 invocarMetodo("darBajaPaciente");
             } catch (Exception ex) {
@@ -254,7 +263,9 @@ class GestionPacientesGUITest {
     }
 
     @Test
+    @DisplayName("Selecciona filas en la tabla y gestiona errores de red en SwingWorker")
     void seleccionaFilaEnTablaYManejaErroresDeSwingWorker() throws Exception {
+        String uuidFila = UUID.randomUUID().toString();
         PacientesHttpClient errorClient = new PacientesHttpClient("http://localhost:0/pacientes", "", "") {
             @Override
             public String consultarPorCip(String cip) throws IOException {
@@ -268,14 +279,14 @@ class GestionPacientesGUITest {
                 Field modeloField = GestionPacientesGUI.class.getDeclaredField("modeloTabla");
                 modeloField.setAccessible(true);
                 DefaultTableModel modelo = (DefaultTableModel) modeloField.get(gui);
-                modelo.addRow(new Object[]{"5", "CIP555", "Marta", "Ruiz", "1992-07-11", "ACTIVO"});
+                modelo.addRow(new Object[]{uuidFila, "CIP555", "Marta", "Ruiz", "1992-07-11", "ACTIVO"});
                 modelo.addRow(new Object[]{null, null, null, null, null, null});
 
                 Field tablaField = GestionPacientesGUI.class.getDeclaredField("tablaPacientes");
                 tablaField.setAccessible(true);
                 JTable tabla = (JTable) tablaField.get(gui);
                 tabla.setRowSelectionInterval(0, 0);
-                assertEquals("5", getCampo("txtId"));
+                assertEquals(uuidFila, getCampo("txtId"));
                 assertEquals("CIP555", getCampo("txtCip"));
 
                 tabla.setRowSelectionInterval(1, 1);
@@ -297,6 +308,7 @@ class GestionPacientesGUITest {
     }
 
     @Test
+    @DisplayName("Rechaza modificación y baja cuando no hay un UUID válido")
     void validaIdEnModificacionYBaja() throws Exception {
         PacientesHttpClient fakeClient = new PacientesHttpClient("http://localhost:0/pacientes", "", "");
 
@@ -316,6 +328,176 @@ class GestionPacientesGUITest {
             timerDialogos.stop();
         }
         cerrarDialogosActivos();
+    }
+
+    @Test
+    @DisplayName("Cubre formatos alternativos de respuesta, cancelación de baja y validaciones adicionales")
+    void cubreRamasDeParseoBajaCanceladaYValidaciones() throws Exception {
+        String uuid1 = UUID.randomUUID().toString();
+        String uuid2 = UUID.randomUUID().toString();
+        AtomicInteger contadorBajas = new AtomicInteger(0);
+
+        PacientesHttpClient client = new PacientesHttpClient("http://localhost:0/pacientes", "", "") {
+            @Override
+            public String consultarPorCip(String cip) {
+                if ("CIPERROR".equalsIgnoreCase(cip)) {
+                    return "Error 404: No existe un paciente con ese CIP.";
+                }
+                if ("CIPJSON".equalsIgnoreCase(cip)) {
+                    return "{\"id\":\"" + uuid2 + "\",\"cip\":\"CIPJSON\",\"nombre\":\"Lucia\",\"apellidos\":\"Sanz\",\"fechaNacimiento\":\"1998-02-14\",\"activo\":\"false\"}";
+                }
+                return "CIP: " + cip + " | Nombre: Pedro | Apellidos: Gomez | Fecha: 1988-09-01 | Estado: ACTIVO | extra=" + uuid1;
+            }
+
+            @Override
+            public String modificarPaciente(String id, String nombre, String apellidos, String fechaNacimiento) {
+                return "%ZZid=" + id + "&cip=CIP100&nombre=" + nombre + "&apellidos=" + apellidos + "&fechaNacimiento=" + fechaNacimiento + "&activo=true";
+            }
+
+            @Override
+            public String darBajaPaciente(String id) {
+                contadorBajas.incrementAndGet();
+                return "Baja ok";
+            }
+        };
+
+        SwingUtilities.invokeAndWait(() -> {
+            gui = new GestionPacientesGUI(client);
+            armarCierreAutomaticoDialogos();
+            try {
+                setCampo("txtCip", "cip100");
+                invocarMetodo("consultarPorCip");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(150);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        cerrarDialogosActivos();
+
+        SwingUtilities.invokeAndWait(() -> {
+            armarCierreAutomaticoDialogos();
+            try {
+                setCampo("txtCip", "cipjson");
+                invocarMetodo("consultarPorCip");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(150);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        cerrarDialogosActivos();
+
+        SwingUtilities.invokeAndWait(() -> {
+            armarCierreAutomaticoDialogos();
+            try {
+                setCampo("txtCip", "ciperror");
+                invocarMetodo("consultarPorCip");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(150);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        cerrarDialogosActivos();
+
+        SwingUtilities.invokeAndWait(() -> {
+            armarCierreAutomaticoDialogos();
+            try {
+                setCampo("txtId", uuid1);
+                setCampo("txtNombre", "Pedro");
+                setCampo("txtApellidos", "");
+                invocarMetodo("modificarPaciente");
+
+                setCampo("txtApellidos", "Gomez");
+                setCampo("txtFechaNacimiento", "2099-01-01");
+                invocarMetodo("modificarPaciente");
+
+                setCampo("txtFechaNacimiento", "1988-09-01");
+                invocarMetodo("modificarPaciente");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(150);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        cerrarDialogosActivos();
+
+        SwingUtilities.invokeAndWait(() -> {
+            armarCierreAutomaticoDialogos();
+            try {
+                setCampo("txtId", uuid1);
+                invocarMetodo("darBajaPaciente");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(150);
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        cerrarDialogosActivos();
+        assertEquals(0, contadorBajas.get());
+
+        if (timerDialogos != null) {
+            timerDialogos.stop();
+        }
+        timerDialogos = new Timer(50, e -> {
+            for (Window w : Window.getWindows()) {
+                if (w instanceof JDialog dialog && dialog.isShowing()) {
+                    JButton yesBtn = buscarBoton(dialog, "Yes");
+                    if (yesBtn == null) {
+                        yesBtn = buscarBoton(dialog, "Sí");
+                    }
+                    if (yesBtn != null) {
+                        yesBtn.doClick();
+                    } else {
+                        dialog.dispose();
+                    }
+                }
+            }
+        });
+        timerDialogos.setRepeats(true);
+
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                setCampo("txtId", uuid1);
+                timerDialogos.start();
+                invocarMetodo("darBajaPaciente");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(200);
+        timerDialogos.stop();
+        cerrarDialogosActivos();
+        assertEquals(1, contadorBajas.get());
+
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                Field modeloField = GestionPacientesGUI.class.getDeclaredField("modeloTabla");
+                modeloField.setAccessible(true);
+                DefaultTableModel modelo = (DefaultTableModel) modeloField.get(gui);
+                boolean encontradaBaja = false;
+                for (int i = 0; i < modelo.getRowCount(); i++) {
+                    if (uuid1.equals(modelo.getValueAt(i, 0))) {
+                        assertEquals("BAJA", modelo.getValueAt(i, 5));
+                        encontradaBaja = true;
+                    }
+                }
+                assertTrue(encontradaBaja);
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
     }
 
     private JButton buscarBoton(Container root, String texto) {

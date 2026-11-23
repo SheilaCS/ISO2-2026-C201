@@ -3,7 +3,13 @@ package com.sescam.radiodiagnostico.cliente.pacientes;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * CLIENTE - Iteracion 4 (RF12).
@@ -26,6 +32,8 @@ public class GestionPacientesGUI extends JFrame {
 
     private final Color azul = new Color(20, 75, 115);
     private final Color fondo = new Color(245, 248, 252);
+
+    private String ultimaRespuesta = "";
 
     public GestionPacientesGUI() {
         this(new PacientesHttpClient());
@@ -229,15 +237,16 @@ public class GestionPacientesGUI extends JFrame {
             protected void done() {
                 try {
                     String respuesta = get();
-                    JOptionPane.showMessageDialog(
-                            GestionPacientesGUI.this,
-                            respuesta,
-                            titulo,
-                            JOptionPane.INFORMATION_MESSAGE
-                    );
+                    String respuestaLegible = decodificarTexto(respuesta);
                     if (alTerminar != null) {
                         alTerminar.run();
                     }
+                    JOptionPane.showMessageDialog(
+                            GestionPacientesGUI.this,
+                            respuestaLegible,
+                            titulo,
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     JOptionPane.showMessageDialog(
@@ -249,7 +258,7 @@ public class GestionPacientesGUI extends JFrame {
                 } catch (ExecutionException e) {
                     JOptionPane.showMessageDialog(
                             GestionPacientesGUI.this,
-                            "Error al comunicar con el servidor.\nComprueba que el servidor esté iniciado en el puerto 8080.",
+                            "Error al comunicar con el servidor.\nComprueba que el servidor esté iniciado en el puerto 8084.",
                             "Error de conexión",
                             JOptionPane.ERROR_MESSAGE
                     );
@@ -275,9 +284,28 @@ public class GestionPacientesGUI extends JFrame {
 
         ejecutarOperacion(
                 "Alta de paciente",
-                () -> clienteHttp.altaPaciente(cip, nombre, apellidos, fecha),
-                null
+                () -> {
+                    String resp = clienteHttp.altaPaciente(cip, nombre, apellidos, fecha);
+                    guardarUltimaRespuesta(resp);
+                    return resp;
+                },
+                () -> cargarPacienteDesdeRespuesta(
+                        decodificarTexto(obtenerUltimaRespuesta()),
+                        cip,
+                        nombre,
+                        apellidos,
+                        fecha,
+                        "ACTIVO"
+                )
         );
+    }
+
+    private synchronized void guardarUltimaRespuesta(String resp) {
+        this.ultimaRespuesta = resp != null ? resp : "";
+    }
+
+    private synchronized String obtenerUltimaRespuesta() {
+        return this.ultimaRespuesta;
     }
 
     private void consultarPorCip() {
@@ -290,8 +318,19 @@ public class GestionPacientesGUI extends JFrame {
 
         ejecutarOperacion(
                 "Consulta por CIP",
-                () -> clienteHttp.consultarPorCip(cip),
-                null
+                () -> {
+                    String resp = clienteHttp.consultarPorCip(cip);
+                    guardarUltimaRespuesta(resp);
+                    return resp;
+                },
+                () -> cargarPacienteDesdeRespuesta(
+                        decodificarTexto(obtenerUltimaRespuesta()),
+                        cip,
+                        txtNombre.getText().trim(),
+                        txtApellidos.getText().trim(),
+                        txtFechaNacimiento.getText().trim(),
+                        "ACTIVO"
+                )
         );
     }
 
@@ -303,15 +342,27 @@ public class GestionPacientesGUI extends JFrame {
         if (!validarDatosAltaOEdicion(false)) {
             return;
         }
-        int id = Integer.parseInt(txtId.getText().trim());
+        String id = txtId.getText().trim();
+        String cip = ValidacionesPacientes.normalizarCip(txtCip.getText());
         String nombre = txtNombre.getText().trim();
         String apellidos = txtApellidos.getText().trim();
         String fecha = txtFechaNacimiento.getText().trim();
 
         ejecutarOperacion(
                 "Modificar paciente",
-                () -> clienteHttp.modificarPaciente(id, nombre, apellidos, fecha),
-                null
+                () -> {
+                    String resp = clienteHttp.modificarPaciente(id, nombre, apellidos, fecha);
+                    guardarUltimaRespuesta(resp);
+                    return resp;
+                },
+                () -> cargarPacienteDesdeRespuesta(
+                        decodificarTexto(obtenerUltimaRespuesta()),
+                        cip,
+                        nombre,
+                        apellidos,
+                        fecha,
+                        "ACTIVO"
+                )
         );
     }
 
@@ -320,7 +371,7 @@ public class GestionPacientesGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Selecciona o indica un ID de paciente válido para dar de baja.");
             return;
         }
-        int id = Integer.parseInt(txtId.getText().trim());
+        String id = txtId.getText().trim();
         int confirmacion = JOptionPane.showConfirmDialog(
                 this,
                 "¿Quieres dar de baja lógica al paciente con ID " + id + "?",
@@ -333,9 +384,181 @@ public class GestionPacientesGUI extends JFrame {
 
         ejecutarOperacion(
                 "Baja lógica de paciente",
-                () -> clienteHttp.darBajaPaciente(id),
-                null
+                () -> {
+                    String resp = clienteHttp.darBajaPaciente(id);
+                    guardarUltimaRespuesta(resp);
+                    return resp;
+                },
+                () -> marcarBajaEnTabla(id)
         );
+    }
+
+    private String decodificarTexto(String texto) {
+        if (texto == null || texto.isEmpty()) {
+            return "";
+        }
+        try {
+            return URLDecoder.decode(texto, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return texto;
+        }
+    }
+
+    private void cargarPacienteDesdeRespuesta(
+            String respuesta,
+            String cipFallback,
+            String nombreFallback,
+            String apellidosFallback,
+            String fechaFallback,
+            String estadoFallback
+    ) {
+        if (respuesta == null || respuesta.startsWith("Error ")) {
+            return;
+        }
+
+        Map<String, String> campos = extraerCampos(respuesta);
+
+        String id = primerNoVacio(
+                campos.get("id"),
+                campos.get("uuid"),
+                extraerUuid(respuesta),
+                txtId.getText().trim()
+        );
+        String cip = primerNoVacio(
+                campos.get("cip"),
+                extraerValorEtiqueta(respuesta, "CIP"),
+                cipFallback
+        ).toUpperCase();
+        String nombre = primerNoVacio(
+                campos.get("nombre"),
+                extraerValorEtiqueta(respuesta, "Nombre"),
+                nombreFallback
+        );
+        String apellidos = primerNoVacio(
+                campos.get("apellidos"),
+                extraerValorEtiqueta(respuesta, "Apellidos"),
+                apellidosFallback
+        );
+        String fecha = primerNoVacio(
+                campos.get("fechanacimiento"),
+                campos.get("fecha_nacimiento"),
+                campos.get("fecha"),
+                extraerValorEtiqueta(respuesta, "Fecha"),
+                fechaFallback
+        );
+        String activoRaw = campos.get("activo");
+        String estadoCalculado = "false".equalsIgnoreCase(activoRaw)
+                ? "BAJA"
+                : ("true".equalsIgnoreCase(activoRaw) ? "ACTIVO" : estadoFallback);
+        String estado = primerNoVacio(
+                campos.get("estado"),
+                extraerValorEtiqueta(respuesta, "Estado"),
+                estadoCalculado
+        );
+
+        if (id.isEmpty() && cip.isEmpty()) {
+            return;
+        }
+
+        int filaExistente = buscarFilaPorIdOCip(id, cip);
+        Object[] filaDatos = new Object[]{id, cip, nombre, apellidos, fecha, estado};
+        int filaObjetivo;
+        if (filaExistente >= 0) {
+            for (int col = 0; col < filaDatos.length; col++) {
+                modeloTabla.setValueAt(filaDatos[col], filaExistente, col);
+            }
+            filaObjetivo = filaExistente;
+        } else {
+            modeloTabla.addRow(filaDatos);
+            filaObjetivo = modeloTabla.getRowCount() - 1;
+        }
+
+        if (!id.isEmpty()) {
+            txtId.setText(id);
+        }
+        if (!cip.isEmpty()) {
+            txtCip.setText(cip);
+        }
+        if (!nombre.isEmpty()) {
+            txtNombre.setText(nombre);
+        }
+        if (!apellidos.isEmpty()) {
+            txtApellidos.setText(apellidos);
+        }
+        if (!fecha.isEmpty()) {
+            txtFechaNacimiento.setText(fecha);
+        }
+        if (filaObjetivo >= 0 && filaObjetivo < tablaPacientes.getRowCount()) {
+            tablaPacientes.setRowSelectionInterval(filaObjetivo, filaObjetivo);
+        }
+    }
+
+    private void marcarBajaEnTabla(String id) {
+        for (int fila = 0; fila < modeloTabla.getRowCount(); fila++) {
+            if (id.equals(valorCelda(fila, 0))) {
+                modeloTabla.setValueAt("BAJA", fila, 5);
+            }
+        }
+    }
+
+    private int buscarFilaPorIdOCip(String id, String cip) {
+        for (int fila = 0; fila < modeloTabla.getRowCount(); fila++) {
+            String idFila = valorCelda(fila, 0);
+            String cipFila = valorCelda(fila, 1);
+            if (!id.isEmpty() && id.equals(idFila)) {
+                return fila;
+            }
+            if (!cip.isEmpty() && cip.equalsIgnoreCase(cipFila)) {
+                return fila;
+            }
+        }
+        return -1;
+    }
+
+    private Map<String, String> extraerCampos(String texto) {
+        Map<String, String> mapa = new LinkedHashMap<>();
+
+        String[] partes = texto.split("[&|\\n\\r;]+");
+        for (String parte : partes) {
+            int eq = parte.indexOf('=');
+            if (eq > 0) {
+                String clave = parte.substring(0, eq).trim().toLowerCase().replaceAll("[^a-z0-9_]", "");
+                String valor = parte.substring(eq + 1).trim();
+                mapa.putIfAbsent(clave, valor);
+            }
+        }
+
+        Matcher jsonMatcher = Pattern.compile("\"([a-zA-Z0-9_]+)\"\\s*:\\s*\"([^\"]*)\"").matcher(texto);
+        while (jsonMatcher.find()) {
+            mapa.putIfAbsent(jsonMatcher.group(1).toLowerCase(), jsonMatcher.group(2).trim());
+        }
+
+        return mapa;
+    }
+
+    private String extraerValorEtiqueta(String texto, String etiqueta) {
+        Matcher m = Pattern.compile("(?i)\\b" + Pattern.quote(etiqueta) + "\\s*[:=]\\s*([^|\\n\\r,;]+)").matcher(texto);
+        if (m.find()) {
+            return m.group(1).trim();
+        }
+        return "";
+    }
+
+    private String extraerUuid(String texto) {
+        Matcher m = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}").matcher(texto);
+        if (m.find()) {
+            return m.group();
+        }
+        return "";
+    }
+
+    private String primerNoVacio(String... candidatos) {
+        for (String c : candidatos) {
+            if (c != null && !c.trim().isEmpty()) {
+                return c.trim();
+            }
+        }
+        return "";
     }
 
     public static void main(String[] args) {

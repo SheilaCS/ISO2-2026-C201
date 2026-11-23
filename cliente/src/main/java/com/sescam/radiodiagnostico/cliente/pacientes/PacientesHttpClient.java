@@ -24,14 +24,14 @@ public class PacientesHttpClient {
      * Constructor utilizado por la aplicacion.
      */
     public PacientesHttpClient() {
-        this("http://localhost:8080/pacientes", "", "");
+        this("http://localhost:8084/pacientes", "", "");
     }
 
     /**
      * Constructor con credenciales HTTP Basic para entorno local.
      */
     public PacientesHttpClient(String usuario, String contrasena) {
-        this("http://localhost:8080/pacientes", usuario, contrasena);
+        this("http://localhost:8084/pacientes", usuario, contrasena);
     }
 
     /**
@@ -91,21 +91,23 @@ public class PacientesHttpClient {
      * Modificacion de paciente: PUT /pacientes/{id}
      * Conserva identificador y CIP; actualiza nombre, apellidos y fecha de nacimiento.
      */
-    public String modificarPaciente(int id, String nombre, String apellidos, String fechaNacimiento)
+    public String modificarPaciente(String id, String nombre, String apellidos, String fechaNacimiento)
             throws IOException, InterruptedException {
+        String idLimpio = id != null ? id.trim() : "";
         String datos = "nombre=" + codificar(nombre.trim())
                 + "&apellidos=" + codificar(apellidos.trim())
                 + "&fechaNacimiento=" + codificar(fechaNacimiento.trim());
 
-        return enviarConCuerpo("PUT", "/" + id, datos);
+        return enviarConCuerpo("PUT", "/" + codificar(idLimpio), datos);
     }
 
     /**
      * Baja logica de paciente: DELETE /pacientes/{id}
      */
-    public String darBajaPaciente(int id) throws IOException, InterruptedException {
+    public String darBajaPaciente(String id) throws IOException, InterruptedException {
+        String idLimpio = id != null ? id.trim() : "";
         HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/" + id))
+                .uri(URI.create(baseUrl + "/" + codificar(idLimpio)))
                 .DELETE();
 
         agregarCabeceraAuth(builder);
