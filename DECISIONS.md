@@ -127,6 +127,63 @@ La aprobación y la integración de cada cambio se acreditan mediante el histori
 - [Documentación de la iteración 3](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-3).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
+
+## Iteración 4 — CDU4: Gestión de pacientes (RF12)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IPacientesService`, implementado por `PacientesServiceImpl`, y separar el almacenamiento mediante `RepositorioPacientes` y `RepositorioPacientesEnMemoria`.
+
+Los pacientes se representan mediante un record inmutable y se identifican con un UUID generado por el servidor.
+
+**Justificación:** separar responsabilidades, facilitar las pruebas y mantener los datos en memoria sin incorporar una base de datos.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas:
+
+- CIP obligatorio, único e inmutable, normalizado a mayúsculas y sin espacios exteriores.
+- Nombre y apellidos obligatorios y fecha de nacimiento no futura.
+- Modificación únicamente de nombre, apellidos y fecha de nacimiento de pacientes activos.
+- Baja lógica, conservando los datos y sin permitir reutilizar el CIP.
+- Rechazo de modificaciones y nuevas bajas de pacientes inactivos.
+- Ninguna operación rechazada guarda cambios parciales.
+
+**Justificación:** evitar duplicados y conservar la coherencia de los pacientes y sus referencias.
+
+### Comunicación y permisos
+
+**Decisión:** comunicar `PacientesHttpClient` con `GestionPacientesHttpServer` mediante HTTP, en el puerto predeterminado 8084, utilizando formularios codificados en UTF-8.
+
+El servidor reutiliza la autenticación de demostración mediante HTTP Basic y permite las operaciones solo al rol `ADMINISTRATIVO`: responde 401 ante credenciales inválidas y 403 ante un rol no autorizado.
+
+**Justificación:** seguir el mecanismo HTTP del proyecto sin añadir dependencias. La autenticación básica se limita al entorno local; fuera de él requiere HTTPS.
+
+### Correcciones del cliente
+
+**Decisión:** utilizar UUID también en el cliente, cargar las respuestas en la tabla y decodificar cada campo por separado.
+
+La baja solo se refleja si el servidor la acepta. El botón `Nuevo/Limpiar` desbloquea el CIP para gestionar otro paciente, conservando la tabla y las credenciales.
+
+**Justificación:** asegurar la compatibilidad con el servidor y evitar estados incorrectos en la pantalla.
+
+### Pruebas y revisión
+
+**Decisión:** mantener los tests en `src/test/java`, con `@DisplayName` en español y casos representativos de validaciones, operaciones y permisos.
+
+**Resultado:** 52 pruebas del servidor y 21 del cliente superadas. El paquete de pacientes del servidor alcanza un 96,93 % de cobertura de líneas y un 100 % de ramas.
+
+Mateo implementó el servidor y sus pruebas. La revisión independiente y la comprobación contra el servidor real quedaron registradas en la PR #53.
+
+### Trazabilidad
+
+- [Issue #13 — Iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/issues/13).
+- [PR #51 — Servidor y pruebas](https://github.com/SheilaCS/ISO2-2026-C201/pull/51).
+- [PR #53 — Cliente y correcciones](https://github.com/SheilaCS/ISO2-2026-C201/pull/53).
+- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-4).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
 ## Iteración 6 — CDU6: Gestionar agendas (RF14)
 
 ### Servicio y comunicación
