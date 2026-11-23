@@ -1,8 +1,11 @@
 package com.sescam.radiodiagnostico.cliente.pacientes;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
@@ -10,6 +13,21 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * CLIENTE - Iteracion 4 (RF12).
@@ -290,7 +308,7 @@ public class GestionPacientesGUI extends JFrame {
                     return resp;
                 },
                 () -> cargarPacienteDesdeRespuesta(
-                        decodificarTexto(obtenerUltimaRespuesta()),
+                        obtenerUltimaRespuesta(),
                         cip,
                         nombre,
                         apellidos,
@@ -324,7 +342,7 @@ public class GestionPacientesGUI extends JFrame {
                     return resp;
                 },
                 () -> cargarPacienteDesdeRespuesta(
-                        decodificarTexto(obtenerUltimaRespuesta()),
+                        obtenerUltimaRespuesta(),
                         cip,
                         txtNombre.getText().trim(),
                         txtApellidos.getText().trim(),
@@ -356,7 +374,7 @@ public class GestionPacientesGUI extends JFrame {
                     return resp;
                 },
                 () -> cargarPacienteDesdeRespuesta(
-                        decodificarTexto(obtenerUltimaRespuesta()),
+                        obtenerUltimaRespuesta(),
                         cip,
                         nombre,
                         apellidos,
@@ -389,7 +407,11 @@ public class GestionPacientesGUI extends JFrame {
                     guardarUltimaRespuesta(resp);
                     return resp;
                 },
-                () -> marcarBajaEnTabla(id)
+                                () -> {
+                    if (!obtenerUltimaRespuesta().startsWith("Error ")) {
+                        marcarBajaEnTabla(id);
+                    }
+                }
         );
     }
 
@@ -522,8 +544,8 @@ public class GestionPacientesGUI extends JFrame {
         for (String parte : partes) {
             int eq = parte.indexOf('=');
             if (eq > 0) {
-                String clave = parte.substring(0, eq).trim().toLowerCase().replaceAll("[^a-z0-9_]", "");
-                String valor = parte.substring(eq + 1).trim();
+                String clave = decodificarTexto(parte.substring(0, eq)).trim().toLowerCase().replaceAll("[^a-z0-9_]", "");
+                String valor = decodificarTexto(parte.substring(eq + 1)).trim();
                 mapa.putIfAbsent(clave, valor);
             }
         }

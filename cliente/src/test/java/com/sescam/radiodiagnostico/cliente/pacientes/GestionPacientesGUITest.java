@@ -1,19 +1,30 @@
 package com.sescam.radiodiagnostico.cliente.pacientes;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Window;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.table.DefaultTableModel;
+
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("Interfaz gráfica de gestión de pacientes (CDU4)")
 class GestionPacientesGUITest {
@@ -498,6 +509,109 @@ class GestionPacientesGUITest {
                 fail(ex);
             }
         });
+    }
+        @Test
+    @DisplayName("Si la baja falla, la tabla no marca al paciente como BAJA")
+    void bajaConErrorNoMarcaLaTabla() throws Exception {
+        String uuidPaciente = UUID.randomUUID().toString();
+        PacientesHttpClient fakeClient = new PacientesHttpClient("http://localhost:0/pacientes", "", "") {
+            @Override
+            public String altaPaciente(String cip, String nombre, String apellidos, String fechaNacimiento) {
+                return "id=" + uuidPaciente + "&cip=CIP003&nombre=Luis&apellidos=Ruiz"
+                        + "&fechaNacimiento=1990-01-01&activo=true";
+            }
+
+            @Override
+            public String darBajaPaciente(String id) {
+                return "Error 401: Credenciales invalidas.";
+            }
+        };
+        armarCierreConSi();
+
+        SwingUtilities.invokeAndWait(() -> {
+            gui = new GestionPacientesGUI(fakeClient);
+            try {
+                setCampo("txtCip", "CIP003");
+                setCampo("txtNombre", "Luis");
+                setCampo("txtApellidos", "Ruiz");
+                setCampo("txtFechaNacimiento", "1990-01-01");
+                invocarMetodo("altaPaciente");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(300);
+
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                invocarMetodo("darBajaPaciente");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(300);
+
+        assertEquals("ACTIVO", celdaTabla(0, 5));
+    }
+
+    @Test
+    @DisplayName("Los datos con & se muestran completos tras el alta")
+    void datosConAmpersandSeMuestranCompletos() throws Exception {
+        String uuidPaciente = UUID.randomUUID().toString();
+        PacientesHttpClient fakeClient = new PacientesHttpClient("http://localhost:0/pacientes", "", "") {
+            @Override
+            public String altaPaciente(String cip, String nombre, String apellidos, String fechaNacimiento) {
+                // Formato real del servidor: cada valor va codificado
+                return "id=" + uuidPaciente + "&cip=CIP004&nombre=Ana"
+                        + "&apellidos=P%C3%A9rez+%26+G%C3%B3mez"
+                        + "&fechaNacimiento=1990-01-01&activo=true";
+            }
+        };
+        armarCierreConSi();
+
+        SwingUtilities.invokeAndWait(() -> {
+            gui = new GestionPacientesGUI(fakeClient);
+            try {
+                setCampo("txtCip", "CIP004");
+                setCampo("txtNombre", "Ana");
+                setCampo("txtApellidos", "Pérez & Gómez");
+                setCampo("txtFechaNacimiento", "1990-01-01");
+                invocarMetodo("altaPaciente");
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        });
+        Thread.sleep(300);
+
+        assertAll(
+                () -> assertEquals("Pérez & Gómez", celdaTabla(0, 3)),
+                () -> assertEquals("Pérez & Gómez", getCampo("txtApellidos")));
+    }
+
+    private void armarCierreConSi() {
+        timerDialogos = new Timer(50, e -> {
+            for (Window w : Window.getWindows()) {
+                if (w instanceof JDialog dialog && dialog.isShowing()) {
+                    JButton si = buscarBoton(dialog, "Yes");
+                    if (si == null) {
+                        si = buscarBoton(dialog, "Sí");
+                    }
+                    if (si != null) {
+                        si.doClick();
+                    } else {
+                        dialog.dispose();
+                    }
+                }
+            }
+        });
+        timerDialogos.start();
+    }
+
+    private String celdaTabla(int fila, int columna) throws Exception {
+        Field campo = GestionPacientesGUI.class.getDeclaredField("modeloTabla");
+        campo.setAccessible(true);
+        DefaultTableModel modelo = (DefaultTableModel) campo.get(gui);
+        return String.valueOf(modelo.getValueAt(fila, columna));
     }
 
     private JButton buscarBoton(Container root, String texto) {
