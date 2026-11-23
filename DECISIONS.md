@@ -8,8 +8,13 @@
 ## D-001 • Estructura inicial del repositorio
 
 **Fecha:** 11/10/2026 · **Iteración:** 0 · **Acta:** 11/10
+
 **Contexto:** el enunciado exige una arquitectura cliente-servidor con múltiples clientes (escritorio, web, móvil) y Maven multimódulo.
-**Decisión:** usar un único repositorio con la estructura:
+
+**Decisión:** usar un único repositorio con la estructura Maven.
+
+### Uso de Copilot en el repositorio.
+Se han llevado a cabo dos commits con la colaboración de Copilot en la rama feature/estructura-maven al implementar el pom.xml padre. Está rama se desarrollo durante una sesión de prácticas y se utilizó la ayuda del agente de Copilot para generar una propuesta válida del mensaje del propio commit. El resto de la implementación de la rama mencionada se hizo manualmente por los miembros del equipo de desarrollo. 
 
 ## Iteración 1 — CDU1: Inicio de sesión (RF01)
 
