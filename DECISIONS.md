@@ -5,7 +5,6 @@
 > Cada decisión se enlaza al acta donde se acordó.
 
 
-
 ## D-001 • Estructura inicial del repositorio
 
 **Fecha:** 11/10/2026 · **Iteración:** 0 · **Acta:** 11/10
@@ -207,4 +206,27 @@ Para funcionar, necesita que el servidor de citas esté disponible en el puerto 
 
 - [PR #52 — Integración de CDU9](https://github.com/SheilaCS/ISO2-2026-C201/pull/52).
 - [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-9).
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+
+## Seguridad — Control de acceso por rol en el MVP
+
+### Control de acceso limitado a los casos de uso clínicos
+
+**Decisión:** en la versión 1.0.0, el servidor comprueba la sesión y el rol únicamente en los casos de uso clínicos: CDU1, CDU4, CDU7 y CDU8, y CDU12 en la versión 1.1.0. Responde 401 si no hay sesión y 403 si el rol no corresponde, como ya hace el servidor de pacientes. En los demás casos de uso no se aplica por ahora.
+
+**Justificación:** el plan de calidad exige pruebas de acceso no autorizado en los casos de uso que manejan datos clínicos. Aplicar el control al resto queda fuera del alcance del MVP.
+
+### Limitación conocida
+
+**Decisión:** aceptar que los servidores de Mis citas, citas, agendas, solicitudes y parámetros no comprueben sesión ni rol (hallazgos H-01 y H-02 de la página "Evaluación de calidad").
+
+En Mis citas, el servidor confía en el ID de paciente que recibe en la petición. No hay datos clínicos expuestos, pero sí información de citas.
+
+**Justificación:** mantener el alcance del MVP. La corrección se abordará con la gestión de roles y permisos (RF18), en una versión posterior.
+
+### Trazabilidad
+
+- [Evaluación de calidad](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Evaluaci%C3%B3n-de-calidad) 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
