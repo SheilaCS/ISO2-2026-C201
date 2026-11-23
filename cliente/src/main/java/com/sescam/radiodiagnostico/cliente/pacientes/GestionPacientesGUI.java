@@ -135,15 +135,16 @@ public class GestionPacientesGUI extends JFrame {
         formulario.add(txtFechaNacimiento);
 
         // BOTONES
-        JPanel botones = new JPanel(new GridLayout(1, 4, 10, 0));
+        JPanel botones = new JPanel(new GridLayout(1, 5, 10, 0));
         botones.setBackground(fondo);
 
         JButton btnAlta = new JButton("Alta paciente");
         JButton btnConsultar = new JButton("Consultar por CIP");
         JButton btnModificar = new JButton("Modificar");
         JButton btnBaja = new JButton("Dar de baja");
+        JButton btnLimpiar = new JButton("Nuevo/Limpiar");
 
-        JButton[] listaBotones = {btnAlta, btnConsultar, btnModificar, btnBaja};
+        JButton[] listaBotones = {btnAlta, btnConsultar, btnModificar, btnBaja, btnLimpiar};
         for (JButton boton : listaBotones) {
             boton.setFont(new Font("Arial", Font.BOLD, 13));
             boton.setFocusPainted(false);
@@ -208,6 +209,19 @@ public class GestionPacientesGUI extends JFrame {
         btnConsultar.addActionListener(e -> consultarPorCip());
         btnModificar.addActionListener(e -> modificarPaciente());
         btnBaja.addActionListener(e -> darBajaPaciente());
+        btnLimpiar.addActionListener(e -> limpiarFormulario());
+    }
+
+    private void limpiarFormulario() {
+        tablaPacientes.clearSelection();
+        txtId.setText("");
+        txtCip.setText("");
+        txtNombre.setText("");
+        txtApellidos.setText("");
+        txtFechaNacimiento.setText("");
+        txtCip.setEditable(true);
+        guardarUltimaRespuesta("");
+        txtCip.requestFocusInWindow();
     }
 
     private String valorCelda(int fila, int col) {

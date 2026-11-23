@@ -628,4 +628,79 @@ class GestionPacientesGUITest {
         }
         return null;
     }
+
+    @Test
+@DisplayName("Nuevo/Limpiar desbloquea el CIP y conserva los pacientes y las credenciales")
+void limpiarPermiteGestionarOtroPaciente() throws Exception {
+    SwingUtilities.invokeAndWait(() -> {
+        gui = new GestionPacientesGUI();
+
+        try {
+            // Preparar un paciente seleccionado.
+            setCampo("txtUsuario", "administrativo.demo");
+            setCampo("txtPassword", "demo");
+
+            Field campoModelo = GestionPacientesGUI.class
+                    .getDeclaredField("modeloTabla");
+            campoModelo.setAccessible(true);
+            DefaultTableModel modelo =
+                    (DefaultTableModel) campoModelo.get(gui);
+
+            String id = UUID.randomUUID().toString();
+            modelo.addRow(new Object[]{
+                    id, "CIP001", "Ana", "García",
+                    "2000-05-15", "ACTIVO"
+            });
+
+            Field campoTabla = GestionPacientesGUI.class
+                    .getDeclaredField("tablaPacientes");
+            campoTabla.setAccessible(true);
+            JTable tabla = (JTable) campoTabla.get(gui);
+            tabla.setRowSelectionInterval(0, 0);
+
+            Field campoCip = GestionPacientesGUI.class
+                    .getDeclaredField("txtCip");
+            campoCip.setAccessible(true);
+            JTextField cip = (JTextField) campoCip.get(gui);
+
+            assertTrue(!cip.isEditable());
+            assertEquals(id, getCampo("txtId"));
+
+            // Localizar y pulsar el botón real.
+            JButton limpiar = buscarBoton(
+                    gui.getContentPane(), "Nuevo/Limpiar");
+            assertNotNull(limpiar);
+            limpiar.doClick();
+
+            // Comprobar el formulario y los datos conservados.
+            assertAll(
+                    () -> assertEquals("", getCampo("txtId")),
+                    () -> assertEquals("", getCampo("txtCip")),
+                    () -> assertEquals("", getCampo("txtNombre")),
+                    () -> assertEquals("", getCampo("txtApellidos")),
+                    () -> assertEquals("", getCampo("txtFechaNacimiento")),
+                    () -> assertTrue(cip.isEditable()),
+                    () -> assertEquals(-1, tabla.getSelectedRow()),
+                    () -> assertEquals(1, modelo.getRowCount()),
+                    () -> assertEquals(
+                            "administrativo.demo", getCampo("txtUsuario")),
+                    () -> assertEquals("demo", getCampo("txtPassword"))
+            );
+
+            // Se puede introducir otro CIP.
+            cip.setText("CIP002");
+            assertEquals("CIP002", cip.getText());
+
+            // Al volver a seleccionar el paciente, el CIP se bloquea.
+            tabla.setRowSelectionInterval(0, 0);
+            assertAll(
+                    () -> assertEquals("CIP001", cip.getText()),
+                    () -> assertTrue(!cip.isEditable())
+            );
+
+        } catch (Exception e) {
+            fail(e);
+        }
+    });
+}
 }
