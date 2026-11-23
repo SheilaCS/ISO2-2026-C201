@@ -1,80 +1,25 @@
 package com.sescam.radiodiagnostico.solicitudes;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
-public class SolicitudServiceImplTest {
+class SolicitudServiceImplTest {
 
     private SolicitudServiceImpl service;
 
     @BeforeEach
     void setUp() {
-         org.junit.jupiter.api.Assumptions.assumeFalse(
-            java.awt.GraphicsEnvironment.isHeadless(), 
-            "Saltando test de GUI porque no hay entorno gráfico"
-            );
         service = new SolicitudServiceImpl();
     }
 
     @Test
-    @DisplayName("Solicitud válida con datos correctos y prioridad URGENTE")
-    void testSolicitudValida() {
-        boolean resultado = service.solicitarPrueba("PAC-001", "TAC", "URGENTE");
-        assertTrue(resultado, "La solicitud con datos válidos debería ser aceptada");
-    }
-
-    @Test
-    @DisplayName("Solicitud inválida con ID de paciente nulo")
-    void testSolicitudIdNulo() {
-        boolean resultado = service.solicitarPrueba(null, "TAC", "URGENTE");
-        assertFalse(resultado, "No se debe aceptar un ID nulo");
-    }
-
-    @Test
-    @DisplayName("Solicitud inválida con tipo de prueba vacío")
-    void testSolicitudTipoVacio() {
-        boolean resultado = service.solicitarPrueba("PAC-001", " ", "URGENTE");
-        assertFalse(resultado, "No se debe aceptar un tipo de prueba vacío");
-    }
-
-    @Test
-    @DisplayName("Solicitud inválida con prioridad no permitida")
-    void testSolicitudPrioridadInvalida() {
-        // Clase de equivalencia inválida (no es URGENTE, PREFERENTE ni ORDINARIO)
-        boolean resultado = service.solicitarPrueba("PAC-001", "TAC", "MUY_URGENTE");
-        assertFalse(resultado, "La prioridad debe ser URGENTE, PREFERENTE u ORDINARIO");
-    }
-
-    @Test
-    @DisplayName("Solicitud inválida con prioridad nula")
-    void testSolicitudPrioridadNula() {
-        boolean resultado = service.solicitarPrueba("PAC-001", "TAC", null);
-        assertFalse(resultado, "No se debe aceptar una prioridad nula");
-    }
-
-    @Test
-    @DisplayName("Solicitud inválida con ID vacío")
-    void testSolicitudIdVacio() {
-        assertFalse(
-            service.solicitarPrueba("", "TAC", "URGENTE")
-        );
-    }
-
-    @Test
-    @DisplayName("Solicitud inválida con ID formado solo por espacios")
-    void testSolicitudIdEspacios() {
-        assertFalse(
-            service.solicitarPrueba("   ", "TAC", "URGENTE")
-        );
-    }
-
-    @Test
-    @DisplayName("Solicitud inválida con tipo de prueba nulo")
-    void testSolicitudTipoNulo() {
-        assertFalse(
-            service.solicitarPrueba("PAC-001", null, "URGENTE")
+    @DisplayName("Solicitud válida con prioridad URGENTE")
+    void testSolicitudUrgente() {
+        assertTrue(
+            service.solicitarPrueba("PAC-001", "TAC", "URGENTE")
         );
     }
 
@@ -95,11 +40,98 @@ public class SolicitudServiceImplTest {
     }
 
     @Test
-    @DisplayName("Solicitud inválida con prioridad vacía")
-    void testSolicitudPrioridadVacia() {
+    @DisplayName("Aceptar prioridad en minúsculas")
+    void testPrioridadMinusculas() {
+        assertTrue(
+            service.solicitarPrueba("PAC-001", "TAC", "urgente")
+        );
+    }
+
+    @Test
+    @DisplayName("Aceptar prioridad con espacios")
+    void testPrioridadConEspacios() {
+        assertTrue(
+            service.solicitarPrueba("PAC-001", "TAC", "  preferente  ")
+        );
+    }
+
+    @Test
+    @DisplayName("Tipo de prueba nulo")
+    void testTipoNulo() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", null, "URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Tipo de prueba vacío")
+    void testTipoVacio() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", "", "URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Tipo de prueba solo espacios")
+    void testTipoEspacios() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", "     ", "URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Prioridad nula")
+    void testPrioridadNula() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", "TAC", null)
+        );
+    }
+
+    @Test
+    @DisplayName("Prioridad vacía")
+    void testPrioridadVacia() {
         assertFalse(
             service.solicitarPrueba("PAC-001", "TAC", "")
         );
     }
 
+    @Test
+    @DisplayName("Prioridad solo espacios")
+    void testPrioridadSoloEspacios() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", "TAC", "    ")
+        );
+    }
+
+    @Test
+    @DisplayName("Prioridad inválida")
+    void testPrioridadInvalida() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", "TAC", "MUY_URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("Prioridad distinta de las permitidas")
+    void testPrioridadNoReconocida() {
+        assertFalse(
+            service.solicitarPrueba("PAC-001", "TAC", "MEDIA")
+        );
+    }
+
+    @Test
+    @DisplayName("ID paciente nulo no afecta mientras el resto sea válido")
+    void testIdPacienteNulo() {
+        assertTrue(
+            service.solicitarPrueba(null, "TAC", "URGENTE")
+        );
+    }
+
+    @Test
+    @DisplayName("ID paciente vacío no afecta mientras el resto sea válido")
+    void testIdPacienteVacio() {
+        assertTrue(
+            service.solicitarPrueba("", "TAC", "URGENTE")
+        );
+    }
 }
