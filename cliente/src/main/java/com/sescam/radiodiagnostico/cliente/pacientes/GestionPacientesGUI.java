@@ -290,7 +290,7 @@ public class GestionPacientesGUI extends JFrame {
                 } catch (ExecutionException e) {
                     JOptionPane.showMessageDialog(
                             GestionPacientesGUI.this,
-                            "Error al comunicar con el servidor.\nComprueba que el servidor esté iniciado en el puerto 8084.",
+                            "Error al comunicar con el servidor.\nComprueba que el servidor esté iniciado en el puerto 8087.",
                             "Error de conexión",
                             JOptionPane.ERROR_MESSAGE
                     );

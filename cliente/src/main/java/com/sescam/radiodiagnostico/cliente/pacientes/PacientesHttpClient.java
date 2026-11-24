@@ -24,14 +24,14 @@ public class PacientesHttpClient {
      * Constructor utilizado por la aplicacion.
      */
     public PacientesHttpClient() {
-        this("http://localhost:8084/pacientes", "", "");
+        this("http://localhost:8087/pacientes", "", "");
     }
 
     /**
      * Constructor con credenciales HTTP Basic para entorno local.
      */
     public PacientesHttpClient(String usuario, String contrasena) {
-        this("http://localhost:8084/pacientes", usuario, contrasena);
+        this("http://localhost:8087/pacientes", usuario, contrasena);
     }
 
     /**

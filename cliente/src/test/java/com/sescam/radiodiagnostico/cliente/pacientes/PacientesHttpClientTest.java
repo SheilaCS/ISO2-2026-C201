@@ -153,7 +153,7 @@ class PacientesHttpClientTest {
     }
 
     @Test
-    @DisplayName("Construye instancias con los constructores por defecto configurados en el puerto 8084")
+    @DisplayName("Construye instancias con los constructores por defecto configurados en el puerto 8087")
     void constructorPorDefectoNoFalla() {
         assertNotNull(new PacientesHttpClient());
         assertNotNull(new PacientesHttpClient("administrativo.demo", "1234"));
