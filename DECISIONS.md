@@ -83,6 +83,57 @@ Se conserva `AutenticacionServiceImpl`, que sigue proporcionando la autenticaci�
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
+## Iteración 2 — CDU2: Solicitar pruebas médicas (RF03)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `ISolicitudService`, implementado por `SolicitudServiceImpl`. El servicio valida los datos de la solicitud y confirma su registro, sin persistencia en base de datos en esta fase.
+
+**Justificación:** el proyecto no utiliza base de datos en esta iteración y el objetivo del CDU2 es fijar el contrato y las reglas de validación del alta de solicitudes. La persistencia real se abordará en una versión posterior.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas.
+
+- El tipo de prueba es obligatorio y no puede quedar vacío ni compuesto solo por espacios.
+- La prioridad es obligatoria y debe ser una de `URGENTE`, `PREFERENTE` u `ORDINARIO`, sin distinguir mayúsculas y tolerando espacios exteriores.
+- Cualquier otro valor de prioridad o un tipo de prueba vacío provocan el rechazo de la solicitud.
+
+**Justificación:** evitar solicitudes sin información clínica útil y unificar los valores de prioridad admitidos por el sistema.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `SolicitudHttpClient` y el servidor `SolicitudHttpHandler`, que escucha en `127.0.0.1`, puerto 8083. La creación de la solicitud se expone en `/solicitudes/crear` y la consulta en `/solicitudes/consultar`, con formularios codificados en UTF-8.
+
+**Justificación:** seguir la misma estructura que el módulo de citas y poder probar cada parte con un servidor o un cliente simulado.
+
+### Validación en cliente y servidor
+
+**Decisión:** comprobar los datos en el cliente con `ValidacionesSolicitudes` antes de enviar la petición, y repetir las comprobaciones en `SolicitudServiceImpl`.
+
+Las validaciones del cliente son `validarId(String)`, `validarTexto(String)` y `validarPrioridad(String)`.
+
+**Justificación:** mostrar respuestas rápidas al usuario sin depender únicamente de la validación del cliente.
+
+### Interfaz del cliente
+
+**Decisión:** construir `SolicitudGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(4, 2)` con los campos `ID Paciente`, `ID Solicitud`, `Tipo de Prueba` y `Prioridad`, y dos botones `Crear Solicitud` y `Consultar Solicitud`. El resultado se muestra en un `JTextArea` no editable. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `SolicitudGUI(SolicitudHttpClient)` permite inyectar un cliente simulado.
+
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y separar la lógica de red de la presentación.
+
+### Organización de las pruebas
+
+
+
+### Trazabilidad
+
+- [Issue #10 — Entregar Iteración 2 (RF06)](https://github.com/SheilaCS/ISO2-2026-C201/issues/10).
+- [PR #57 — Integración de CDU2](https://github.com/SheilaCS/ISO2-2026-C201/pull/57).
+- [Documentación de la iteración 2](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-2).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
 ## Iteración 3 — CDU3: Gestionar citas (RF13)
 
 ### Comunicación entre cliente y servidor
@@ -189,6 +240,66 @@ Mateo implementó el servidor y sus pruebas. La revisión independiente y la com
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
+
+## Iteración 5 — CDU5: Configurar parámetros (RF05)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IParametroService`, implementado por `ParametroServiceImpl`, que guarda los parámetros en memoria mediante un `HashMap`.
+
+**Justificación:** el proyecto no utiliza base de datos en esta fase. La lógica de almacenamiento queda separada del transporte HTTP.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas.
+
+- `guardarParametro(clave, valor)` solo almacena la pareja cuando ambos son no nulos; en caso contrario no modifica el mapa.
+- `obtenerParametro(clave)` devuelve `"No encontrado"` cuando la clave no existe.
+
+**Justificación:** evitar entradas corruptas en el mapa y ofrecer una respuesta controlada al cliente cuando se consulta una clave desconocida.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `ParametrosHttpClient` y el servidor `ParametroHttpHandler`, que escucha en `127.0.0.1`, puerto 8084. El guardado se expone en `/parametros/guardar` y la consulta en `/parametros/consultar`, con formularios codificados en UTF-8.
+
+**Justificación:** seguir la misma estructura que el resto de módulos y poder probar cada parte con un servidor o un cliente simulado.
+
+### Limitación conocida del servidor
+
+**Decisión:** en esta versión, `ParametroHttpHandler` no persiste los valores enviados: la respuesta de `/guardar` es un eco del par recibido y la de `/consultar` devuelve un valor simulado. La lógica real ya existe en `ParametroServiceImpl`, pero aún no está cableada al handler.
+
+**Justificación:** el objetivo de la iteración es fijar el contrato HTTP y la pantalla de configuración. El cableado definitivo entre handler y servicio se hará cuando se integre la persistencia.
+
+### Validación en cliente
+
+**Decisión:** comprobar los datos en el cliente con `ValidacionesParametros`:
+
+- `validarTexto(String)`: no nulo y no vacío tras `trim()`.
+- `validarNumeroPositivo(String)`: entero mayor o igual que cero, tolerante a espacios.
+
+La GUI lanza `IllegalArgumentException` con mensaje en español cuando la validación falla.
+
+**Justificación:** ofrecer respuesta inmediata al usuario y reutilizar validaciones comunes con el resto de módulos.
+
+### Interfaz del cliente
+
+**Decisión:** construir `ParametroGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(2, 2)` con los campos `Clave del parámetro` y `Valor`, y dos botones `Guardar` y `Consultar`. El resultado se muestra en un `JTextArea` no editable. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `ParametroGUI(ParametrosHttpClient)` permite inyectar un cliente simulado.
+
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y separar la lógica de red de la presentación.
+
+### Organización de las pruebas
+
+
+
+### Trazabilidad
+
+- [Issue #14 — Entregar Iteración 5 (RF17)](https://github.com/SheilaCS/ISO2-2026-C201/issues/14).
+- [PR #60 — Integración de CDU5](https://github.com/SheilaCS/ISO2-2026-C201/pull/60).
+- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-5).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
 ## Iteración 6 — CDU6: Gestionar agendas (RF14)
 
 ### Servicio y comunicación
@@ -229,6 +340,60 @@ Los horarios se guardan en memoria.
 - [PR #46 — Integración de CDU6](https://github.com/SheilaCS/ISO2-2026-C201/pull/46).
 - [Documentación de la iteración 6](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-6).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+## Iteración 8 — CDU8: Generar informes de mantenimiento (RF08)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IInformeService`, implementado por `InformeServiceImpl`. El servicio valida la petición, comprueba el rol y confirma la generación del informe, sin persistencia en base de datos en esta fase.
+
+**Justificación:** el objetivo del CDU8 en esta iteración es fijar el contrato, las reglas de seguridad y las validaciones del informe de mantenimiento. La persistencia real se abordará en una versión posterior.
+
+### Reglas de negocio y seguridad
+
+**Decisión:** aplicar las siguientes reglas.
+
+- El acceso está limitado a los roles `TECNICO` y `ADMIN`, comparados tras `trim()` y `toUpperCase()`.
+- El `idEquipo` debe ser un entero mayor que 0.
+- La `descripcion` no puede ser nula ni vacía.
+- La `fecha` debe ser parseable como `LocalDate` en formato `AAAA-MM-DD`.
+- Cualquier incumplimiento provoca el rechazo de la operación sin generar el informe.
+
+**Justificación:** los informes de mantenimiento solo deben ser accesibles al personal técnico o administrador. La validación en servidor evita que un cliente manipulado pueda saltarse las comprobaciones del cliente.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `InformesHttpClient` y el servidor `InformeHttpHandler`, que escucha en `127.0.0.1`, puerto 8085. La generación se expone en `/informes/generar` y la consulta en `/informes/consultar`, con formularios codificados en UTF-8. El handler convierte los parámetros numéricos con `parsearEntero(String)`, que devuelve `-1` ante valores no numéricos para que la validación del servicio los rechace sin lanzar `NumberFormatException`.
+
+**Justificación:** seguir la misma estructura que el resto de módulos, evitar errores no controlados ante entradas malformadas y permitir aplicar RBAC a partir del rol recibido.
+
+### Validación en cliente y servidor
+
+**Decisión:** comprobar los datos en el cliente con `ValidacionesInformes` antes de enviar la petición, y repetir las comprobaciones en `InformeServiceImpl`.
+
+Las validaciones del cliente son `validarId(String)`, `validarTexto(String)`, `validarFecha(String)` y `tienePermiso(String)`, que acepta únicamente `TECNICO` o `ADMIN`.
+
+**Justificación:** mostrar respuestas rápidas al usuario, reforzar el RBAC en el cliente y reutilizar el mismo criterio de permisos que el servidor.
+
+### Interfaz del cliente
+
+**Decisión:** construir `InformeGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(5, 2)` con los campos `Rol`, `ID Equipo`, `Fecha`, `Descripción` e `ID Informe`, y dos botones `Generar Informe` y `Consultar Informe`. El campo de rol se precarga con `TECNICO`. El resultado se muestra en un `JTextArea` no editable. Los errores de seguridad se muestran con `WARNING_MESSAGE` bajo el título `Seguridad`; el resto, con `ERROR_MESSAGE`. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `InformeGUI(InformesHttpClient)` permite inyectar un cliente simulado.
+
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing, distinguir visualmente los rechazos de seguridad y separar la lógica de red de la presentación.
+
+### Organización de las pruebas
+
+
+
+### Trazabilidad
+
+- [Issue #XX — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/XX).
+- [PR #XX — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/XX).
+- [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-8).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
 
 ## Iteración 9 — CDU9: Gestionar mis citas (RF02)
 
