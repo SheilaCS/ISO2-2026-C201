@@ -73,6 +73,22 @@ Se conserva `AutenticacionServiceImpl`, que sigue proporcionando la autenticaci�
 
 **Resultado:** quedan 18 pruebas: 14 del servicio del servidor y 4 del adaptador del cliente. La ejecución de `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas.
 
+### Pruebas de la pantalla de inicio de sesión
+
+**Decisión implementada en la PR #50:** añadir `LoginGUITest` para probar la pantalla con un servicio de autenticación falso, sin depender del servidor.
+
+Las pruebas comprueban el acceso correcto, la clave incorrecta, los campos vacíos sin llamar al servicio, los espacios alrededor del usuario, el vaciado del campo de contraseña, el título de la ventana y el método `main`.
+
+**Resultado:** `LoginGUI` pasa del 0 % al 100 % de cobertura. El CU01 queda con 26 pruebas: 14 del servicio del servidor, 4 del adaptador y 8 de la pantalla.
+
+### Pruebas de acceso no autorizado
+
+**Decisión:** en el CDU1, las pruebas de acceso no autorizado comprueban que nadie obtiene una sesión ni un rol que no le corresponde, ya que este caso de uso asigna los roles y no tiene acciones reservadas a un rol concreto.
+
+Se utilizan las pruebas existentes de `AutenticacionServiceImplTest` (clave incorrecta, usuario desconocido, variantes, valores vacíos y nulos, y rol propio de cada usuario) y una comprobación manual en la pantalla de inicio de sesión. El control de las acciones reservadas a cada rol se prueba en los casos de uso que las implementan, como el CDU4.
+
+**Justificación:** cumplir la actividad de pruebas de acceso no autorizado (RNF-SEG-02 y RNF-SEG-04) sin duplicar pruebas. El resultado y las capturas están en la wiki, página "Iteración 1", apartado "Pruebas de acceso no autorizado".
+
 ### Trazabilidad
 
 - [Issue #9 — Entregar Iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/issues/9).
@@ -80,6 +96,7 @@ Se conserva `AutenticacionServiceImpl`, que sigue proporcionando la autenticaci�
 - [PR #37 — Revisión de tests y eliminación del simulador](https://github.com/SheilaCS/ISO2-2026-C201/pull/37).
 - [Documentación de la iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-1).
 - [PR #40 — Ampliación de pruebas con clases de equivalencia y valores límite](https://github.com/SheilaCS/ISO2-2026-C201/pull/40).
+- [PR #50 — Pruebas de la pantalla de inicio de sesión](https://github.com/SheilaCS/ISO2-2026-C201/pull/50).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -207,6 +224,8 @@ Los pacientes se representan mediante un record inmutable y se identifican con u
 
 **Justificación:** evitar duplicados y conservar la coherencia de los pacientes y sus referencias.
 
+La baja lógica es definitiva: no se ofrece una operación para reactivar a un paciente inactivo. Si fuera necesaria, se incorporaría como un requisito nuevo en una versión posterior.
+
 ### Comunicación y permisos
 
 **Decisión:** comunicar `PacientesHttpClient` con `GestionPacientesHttpServer` mediante HTTP, en el puerto predeterminado 8084, utilizando formularios codificados en UTF-8.
@@ -214,6 +233,12 @@ Los pacientes se representan mediante un record inmutable y se identifican con u
 El servidor reutiliza la autenticación de demostración mediante HTTP Basic y permite las operaciones solo al rol `ADMINISTRATIVO`: responde 401 ante credenciales inválidas y 403 ante un rol no autorizado.
 
 **Justificación:** seguir el mecanismo HTTP del proyecto sin añadir dependencias. La autenticación básica se limita al entorno local; fuera de él requiere HTTPS.
+
+### Integración
+
+**Decisión:** no crear una rama de integración independiente. El servidor se incorporó a `develop` en la PR #51, y la rama del cliente incorporó `develop` antes de integrarse mediante la PR #53.
+
+**Justificación:** la rama del cliente ya reunía ambas partes, por lo que una tercera rama no aportaba nada. Antes de fusionar se comprobó el flujo completo contra el servidor real: alta, consulta, modificación y baja.
 
 ### Correcciones del cliente
 
@@ -223,13 +248,33 @@ La baja solo se refleja si el servidor la acepta. El botón `Nuevo/Limpiar` desb
 
 **Justificación:** asegurar la compatibilidad con el servidor y evitar estados incorrectos en la pantalla.
 
+### Pruebas de acceso no autorizado
+
+**Decisión implementada en la PR #62:** comprobar que los roles distintos de `ADMINISTRATIVO` (`MEDICO`, `PACIENTE` y `ADMINISTRADOR`) no pueden dar de alta, modificar ni dar de baja pacientes, y que los datos no cambian tras el rechazo.
+
+Se añade una prueba parametrizada a `GestionPacientesHttpServerTest` con 9 casos (3 roles × 3 operaciones). Cada caso comprueba la respuesta `403`, que el paciente conserva sus datos y sigue activo, y que no se crea ningún paciente nuevo. Hasta entonces, el rechazo solo se comprobaba en la consulta.
+
+**Justificación:** el CDU4 maneja datos clínicos y tiene acciones de modificación, por lo que debe evaluar la confidencialidad (RNF-SEG-02 y RNF-SEG-04) y la integridad (RNF-SEG-05). La prueba falla si se elimina la comprobación del rol en el servidor. La comprobación manual y las capturas están en la wiki, página "Iteración 4".
+
+### Diagramas
+
+**Decisión:** realizar los diagramas en Visual Paradigm con el mismo formato que el resto de iteraciones. Las clases de diseño se obtienen mediante ingeniería inversa del código; la clase `Paciente`, al ser un record, se completa manualmente. Los diagramas de secuencia representan el alta de un paciente, la operación principal, en el servidor y en el cliente.
+
+**Justificación:** mantener la correspondencia entre los diagramas y el código, y la coherencia con la documentación de las demás iteraciones.
+
 ### Pruebas y revisión
 
 **Decisión:** mantener los tests en `src/test/java`, con `@DisplayName` en español y casos representativos de validaciones, operaciones y permisos.
 
-**Resultado:** 52 pruebas del servidor y 21 del cliente superadas. El paquete de pacientes del servidor alcanza un 96,93 % de cobertura de líneas y un 100 % de ramas.
+**Resultado:** 61 pruebas del servidor (incluidas las 9 de acceso no autorizado) y 21 del cliente superadas. El paquete de pacientes del servidor alcanza un 96,93 % de cobertura de líneas y un 100 % de ramas, y el del cliente un 96,34 % de líneas y un 83,55 % de ramas.
 
-Mateo implementó el servidor y sus pruebas. La revisión independiente y la comprobación contra el servidor real quedaron registradas en la PR #53.
+Mateo implementó el servidor y sus pruebas, y Tomás el cliente. Juan Manuel y Mateo corrigieron el cliente tras la revisión. La revisión independiente y la comprobación contra el servidor real quedaron registradas en la PR #53.
+
+### Documentación de las pruebas de acceso no autorizado
+
+**Decisión:** cada iteración con datos clínicos incluye en su página de la wiki un apartado "Pruebas de acceso no autorizado" con una tabla de intentos por rol, la captura de la prueba unitaria y la captura de la comprobación manual, y una fila en su resumen.
+
+**Justificación:** dejar evidencia homogénea de RNF-SEG-02, RNF-SEG-04 y, en las acciones de modificación, RNF-SEG-05. Aplicado en las iteraciones 1 y 4; la plantilla de la iteración 7 ya lo incluye.
 
 ### Trazabilidad
 
@@ -237,6 +282,8 @@ Mateo implementó el servidor y sus pruebas. La revisión independiente y la com
 - [PR #51 — Servidor y pruebas](https://github.com/SheilaCS/ISO2-2026-C201/pull/51).
 - [PR #53 — Cliente y correcciones](https://github.com/SheilaCS/ISO2-2026-C201/pull/53).
 - [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-4).
+- [PR #59 — Decisiones de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/pull/59).
+- [PR #62 — Pruebas de acceso no autorizado](https://github.com/SheilaCS/ISO2-2026-C201/pull/62).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
