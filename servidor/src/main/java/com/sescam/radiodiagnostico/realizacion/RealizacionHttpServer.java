@@ -225,7 +225,7 @@ public class RealizacionHttpServer {
     }
 
     public static void main(String[] args) throws IOException {
-        int puerto = Integer.getInteger("realizacion.puerto", 8087);
+        int puerto = Integer.getInteger("realizacion.puerto", 8086);
         HttpServer servidor = crearServidor(puerto);
         servidor.start();
         System.out.println("Realizacion: http://127.0.0.1:" + servidor.getAddress().getPort() + "/realizaciones");

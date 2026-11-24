@@ -23,39 +23,50 @@ class ProveedorRealizacionHttpTest {
     }
 
     @Test
-    @DisplayName("Comprueba existencia de cita (200 y 404) e ID no positivo")
-    void compruebaCitaExistenteYNoExistente() throws Exception {
-        // Preparar
+    @DisplayName("Comprueba existencia de cita, correspondencia con solicitud e IDs invalidos")
+    void compruebaCitaYSolicitud() throws Exception {
         servidor = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-        servidor.createContext("/citas", ex -> {
+        servidor.createContext("/citas/consultar", ex -> {
             String query = ex.getRequestURI().getRawQuery();
-            int codigo = (query != null && query.contains("idCita=10")) ? 200 : 404;
-            byte[] body = "ok".getBytes(StandardCharsets.UTF_8);
+            int codigo = 404;
+            String respuesta = "No encontrada";
+            if (query != null && query.contains("id=10")) {
+                codigo = 200;
+                respuesta = "Cita 10 | Solicitud 2 | ACTIVA";
+            } else if (query != null && query.contains("id=50")) {
+                codigo = 200;
+                respuesta = "No existe la cita";
+            }
+            byte[] body = respuesta.getBytes(StandardCharsets.UTF_8);
             ex.sendResponseHeaders(codigo, body.length);
             ex.getResponseBody().write(body);
             ex.close();
         });
         servidor.start();
 
-        String url = "http://127.0.0.1:" + servidor.getAddress().getPort() + "/citas";
+        String url = "http://127.0.0.1:" + servidor.getAddress().getPort() + "/citas/consultar";
         ProveedorRealizacionHttp proveedor = new ProveedorRealizacionHttp(url);
 
-        // Ejecutar y Comprobar
         assertAll(
                 () -> assertTrue(proveedor.existeCita(10)),
+                () -> assertFalse(proveedor.existeCita(50)),
                 () -> assertFalse(proveedor.existeCita(99)),
                 () -> assertFalse(proveedor.existeCita(0)),
-                () -> assertFalse(proveedor.existeCita(-1))
+                () -> assertTrue(proveedor.correspondeCitaASolicitud(10, 2)),
+                () -> assertFalse(proveedor.correspondeCitaASolicitud(10, 99)),
+                () -> assertFalse(proveedor.correspondeCitaASolicitud(99, 2)),
+                () -> assertFalse(proveedor.correspondeCitaASolicitud(0, 2))
         );
     }
 
     @Test
     @DisplayName("Lanza IllegalStateException cuando el servidor de citas no esta disponible")
     void lanzaExcepcionSiServidorCaido() {
-        // Preparar
-        ProveedorRealizacionHttp proveedor = new ProveedorRealizacionHttp("http://127.0.0.1:1/citas");
+        ProveedorRealizacionHttp proveedor = new ProveedorRealizacionHttp("http://127.0.0.1:1/citas/consultar");
 
-        // Ejecutar y Comprobar
-        assertThrows(IllegalStateException.class, () -> proveedor.existeCita(10));
+        assertAll(
+                () -> assertThrows(IllegalStateException.class, () -> proveedor.existeCita(10)),
+                () -> assertThrows(IllegalStateException.class, () -> proveedor.correspondeCitaASolicitud(10, 2))
+        );
     }
 }

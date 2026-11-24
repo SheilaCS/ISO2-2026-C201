@@ -39,6 +39,9 @@ public class RealizacionServiceImpl implements IRealizacionService {
         if (!proveedor.existeCita(idCita)) {
             throw new IllegalArgumentException("La cita indicada no existe.");
         }
+        if (!proveedor.correspondeCitaASolicitud(idCita, idSolicitud)) {
+            throw new IllegalArgumentException("La cita indicada no corresponde a la solicitud.");
+        }
         if (realizacionesPorCita.containsKey(idCita)) {
             throw new IllegalStateException("Ya existe una realizacion registrada para esa cita.");
         }

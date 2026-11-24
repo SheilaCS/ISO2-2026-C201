@@ -18,7 +18,7 @@ public class RealizacionHttpClient {
     private String password = "";
 
     public RealizacionHttpClient() {
-        this("http://127.0.0.1:" + Integer.getInteger("realizacion.puerto", 8087) + "/realizaciones");
+        this("http://127.0.0.1:" + Integer.getInteger("realizacion.puerto", 8086) + "/realizaciones");
     }
 
     public RealizacionHttpClient(String urlBase) {

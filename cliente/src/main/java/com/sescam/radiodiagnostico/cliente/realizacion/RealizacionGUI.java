@@ -172,7 +172,7 @@ public class RealizacionGUI extends JFrame {
                     Thread.currentThread().interrupt();
                     mostrarError("Operacion interrumpida.");
                 } catch (ExecutionException e) {
-                    mostrarError("Error de comunicacion con el servidor en el puerto 8087.");
+                    mostrarError("Error de comunicacion con el servidor en el puerto 8086.");
                 }
             }
         }.execute();
