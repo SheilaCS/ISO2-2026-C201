@@ -140,7 +140,23 @@ Las validaciones del cliente son `validarId(String)`, `validarTexto(String)` y `
 
 ### Organización de las pruebas
 
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la trazabilidad entre código de producción y código de prueba.
 
+- El servicio se prueba verificando todas las prioridades válidas y los distintos escenarios de rechazo por datos incorrectos.
+- El servidor HTTP se prueba arrancándolo en un puerto libre y realizando peticiones GET y POST reales.
+- El cliente HTTP se prueba mediante un servidor HTTP embebido que simula el comportamiento del servidor.
+- La interfaz gráfica se prueba utilizando clientes simulados para aislar la lógica de presentación de la comunicación real.
+- Se verifican tanto los flujos correctos como los errores de validación y los errores de conexión.
+- Los casos de prueba se diseñan mediante clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+
+**Resultado:**
+
+Se ejecutaron correctamente **64 pruebas automatizadas**:
+
+- **Servidor:** 20 pruebas.
+- **Cliente:** 44 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
 
 ### Trazabilidad
 
@@ -336,7 +352,23 @@ La GUI lanza `IllegalArgumentException` con mensaje en español cuando la valida
 
 ### Organización de las pruebas
 
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la localización de incidencias y el mantenimiento de la batería de pruebas.
 
+- El servicio se prueba verificando el almacenamiento, recuperación y actualización de parámetros.
+- El servidor HTTP se prueba arrancándolo sobre un puerto libre y enviando peticiones HTTP reales.
+- El cliente HTTP se prueba mediante un servidor embebido que simula las respuestas del servidor.
+- La interfaz gráfica se prueba mediante clientes simulados que permiten validar el comportamiento sin dependencias externas.
+- Se validan tanto operaciones correctas como situaciones de error y entradas inválidas.
+- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+
+**Resultado:**
+
+Se ejecutaron correctamente **45 pruebas automatizadas**:
+
+- **Servidor:** 12 pruebas.
+- **Cliente:** 33 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
 
 ### Trazabilidad
 
@@ -431,7 +463,23 @@ Las validaciones del cliente son `validarId(String)`, `validarTexto(String)`, `v
 
 ### Organización de las pruebas
 
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para asegurar la correspondencia directa entre cada componente y sus pruebas asociadas.
 
+- El servicio se prueba verificando las validaciones funcionales y las restricciones de seguridad basadas en roles.
+- El servidor HTTP se prueba mediante peticiones reales enviadas a un servidor embebido arrancado en un puerto libre.
+- El cliente HTTP se prueba utilizando servidores simulados para validar la construcción y envío de peticiones.
+- La interfaz gráfica se prueba mediante clientes simulados para verificar validaciones, permisos, mensajes de error y resultados mostrados al usuario.
+- Se comprueba tanto el comportamiento correcto como los escenarios de error, acceso denegado y fallos de comunicación.
+- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+
+**Resultado:**
+
+Se ejecutaron correctamente **75 pruebas automatizadas**:
+
+- **Servidor:** 27 pruebas.
+- **Cliente:** 48 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
 
 ### Trazabilidad
 
