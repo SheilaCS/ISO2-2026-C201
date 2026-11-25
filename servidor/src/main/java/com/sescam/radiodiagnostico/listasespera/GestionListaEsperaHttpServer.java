@@ -56,10 +56,7 @@ public class GestionListaEsperaHttpServer {
         return crearServidor(
                 puerto,
                 new ListaEsperaServiceImpl(proveedor, proveedor,
-                        (solicitud, paciente, fecha, hora) -> {
-                            throw new IllegalStateException(
-                                    "Modulo de citas no conectado");
-                        }),
+                        new AsignadorCitasHttp()),
                 new AutenticacionServiceImpl());
     }
 
@@ -432,7 +429,7 @@ public class GestionListaEsperaHttpServer {
     }
 
     public static void main(String[] args) throws IOException {
-        int puerto = Integer.getInteger("listaespera.puerto", 8086);
+        int puerto = Integer.getInteger("listaespera.puerto", 8089);
         HttpServer servidor = crearServidor(puerto);
         servidor.start();
         System.out.println(

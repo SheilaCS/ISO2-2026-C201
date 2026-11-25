@@ -27,7 +27,7 @@ public class ListaEsperaHttpClient {
 
     // Direccion normal del servidor de listas de espera
     public static final String URL_POR_DEFECTO =
-            "http://localhost:8086/listaespera";
+            "http://localhost:8089/listaespera";
 
     private final String urlBase;
 

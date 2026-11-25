@@ -222,7 +222,7 @@ class ListaEsperaHttpClientTest {
     void direccionPorDefecto() {
         new ListaEsperaHttpClient();
 
-        assertEquals("http://localhost:8086/listaespera",
+        assertEquals("http://localhost:8089/listaespera",
                 ListaEsperaHttpClient.URL_POR_DEFECTO);
     }
 
