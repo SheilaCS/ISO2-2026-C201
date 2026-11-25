@@ -596,3 +596,122 @@ En Mis citas, el servidor confía en el ID de paciente que recibe en la petició
 
 - [Evaluación de calidad](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Evaluaci%C3%B3n-de-calidad) 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+## Iteración 18 — CDU18: Comunicar incidencias y responder encuestas de satisfacción (RF05)
+
+### Acceso a las citas y pruebas realizadas mediante una interfaz
+
+**Decisión:** el servicio de encuestas no accede directamente a la lógica de otros módulos. Utiliza la interfaz `IEncuestasProveedor` y su implementación `ProveedorEncuestasHttp`, que se comunica mediante HTTP con el servidor de Mis citas de la iteración 9 (puerto 8082) y el servidor de realización de pruebas de la iteración 7 (puerto 8086).
+
+**Justificación:** reducir las dependencias entre casos de uso y permitir probar `GestionEncuestasServiceImpl` mediante un proveedor simulado. Cumple el criterio de integración por interfaz del plan de calidad.
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IGestionEncuestasService`, implementado por `GestionEncuestasServiceImpl`. Las incidencias y encuestas de satisfacción se representan mediante `IncidenciaPaciente` y `EncuestaSatisfaccion`, respectivamente, y se almacenan en memoria.
+
+**Justificación:** mantener la arquitectura del proyecto, separar responsabilidades y facilitar las pruebas sin incorporar una base de datos en esta fase.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `EncuestasHttpClient` y el servidor `GestionEncuestasHttpServer`, que escucha en el puerto 8090.
+
+Para funcionar correctamente, necesita que estén disponibles los servidores de Mis citas y realización de pruebas. De forma indirecta, también depende del servidor de citas de la iteración 3 (puerto 8080).
+
+**Justificación:** mantener la arquitectura cliente-servidor definida para el proyecto y reutilizar las funcionalidades implementadas en las iteraciones anteriores.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas.
+
+- El identificador de cita debe ser un entero mayor que 0.
+- La cita debe pertenecer al paciente autenticado.
+- La descripción de la incidencia es obligatoria.
+- La descripción de la incidencia no puede superar los 500 caracteres.
+- La encuesta únicamente puede registrarse cuando la prueba se ha realizado.
+- La puntuación de la encuesta debe estar comprendida entre 1 y 5.
+- El comentario de la encuesta es opcional y no puede superar los 500 caracteres.
+- Solo se permite registrar una encuesta de satisfacción por cita.
+
+**Justificación:** garantizar la coherencia de los datos, evitar encuestas duplicadas y asegurar que cada paciente únicamente pueda realizar operaciones sobre sus propias citas.
+
+### Control de acceso y seguridad
+
+**Decisión:** reutilizar el servicio de autenticación de demostración del proyecto y restringir las operaciones de comunicación de incidencias y envío de encuestas al rol `PACIENTE`.
+
+El servidor comprueba las credenciales del usuario y verifica que la cita pertenece al paciente autenticado.
+
+**Justificación:** evitar accesos no autorizados y proteger la información asociada a las citas de otros pacientes.
+
+### Validación en cliente y servidor
+
+**Decisión:** comprobar los datos en el cliente mediante `ValidacionesEncuestas` antes de enviar la petición y repetir las comprobaciones correspondientes en `GestionEncuestasServiceImpl`.
+
+**Justificación:** proporcionar respuestas inmediatas al usuario y evitar que un cliente manipulado pueda omitir las validaciones de las reglas de negocio.
+
+### Interfaz del cliente
+
+**Decisión:** implementar `GestionEncuestasGUI` mediante Java Swing, incluyendo los campos de usuario, contraseña, identificador de cita, descripción de incidencia, puntuación y comentario opcional.
+
+La interfaz dispone de dos botones: `Comunicar incidencia` y `Enviar encuesta`. Las peticiones al servidor se realizan mediante `SwingWorker` para evitar bloquear la interfaz gráfica durante la comunicación.
+
+El campo de contraseña se limpia después de cada operación.
+
+**Justificación:** mantener la coherencia visual con el resto de interfaces del proyecto, separar la presentación de la comunicación HTTP y mejorar la seguridad de las credenciales.
+
+### Integración
+
+**Decisión:** desarrollar el cliente, el servidor y sus pruebas en la rama `feature/cdu18-encuestas`, manteniendo separados los módulos mediante sus respectivos paquetes `encuestas`.
+
+Se ha comprobado manualmente el funcionamiento integrado con los servidores de citas, Mis citas y realización de pruebas.
+
+**Justificación:** verificar el funcionamiento completo del caso de uso y garantizar la compatibilidad con las funcionalidades desarrolladas en iteraciones anteriores.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo, dentro del mismo paquete que la clase probada.
+
+- El servicio se prueba mediante proveedores simulados, verificando las reglas de negocio.
+- El servidor HTTP se prueba mediante peticiones reales a un servidor embebido.
+- El proveedor HTTP se prueba simulando los servicios dependientes.
+- El cliente HTTP se prueba mediante servidores simulados.
+- La interfaz gráfica se prueba verificando sus validaciones y comportamiento.
+- Los casos de prueba se diseñan mediante clases de equivalencia, valores límite y conjetura de errores.
+- Se utiliza JUnit para la ejecución de pruebas automatizadas y JaCoCo para medir la cobertura del código.
+
+**Resultado:** se ejecutaron correctamente 88 pruebas automatizadas:
+
+- **Servidor:** 48 pruebas.
+- **Cliente:** 40 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+
+### Comprobación manual
+
+**Decisión:** realizar pruebas manuales utilizando las interfaces gráficas y los servidores reales de las iteraciones implicadas.
+
+Se han comprobado los siguientes escenarios:
+
+- Asignación de una cita al paciente.
+- Registro de la realización de una prueba.
+- Comunicación correcta de una incidencia.
+- Envío correcto de una encuesta de satisfacción.
+- Rechazo de credenciales incorrectas.
+- Rechazo de citas que no pertenecen al paciente.
+- Rechazo de encuestas correspondientes a pruebas no realizadas.
+
+**Resultado:** las dos funcionalidades principales del CDU18 se ejecutan correctamente mediante la interfaz gráfica.
+
+### Limitaciones conocidas
+
+**Decisión:** mantener las incidencias y encuestas en memoria durante esta fase del proyecto.
+
+**Justificación:** el proyecto todavía no dispone de persistencia en base de datos. Los registros se pierden al reiniciar el servidor.
+
+### Trazabilidad
+
+- Rama `feature/cdu18-encuestas`.
+- Pull request de integración de CDU18 (pendiente de incorporar su enlace).
+- Documentación de la iteración 18 en la wiki.
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
