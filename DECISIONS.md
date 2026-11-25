@@ -8,8 +8,13 @@
 ## D-001 • Estructura inicial del repositorio
 
 **Fecha:** 11/10/2026 · **Iteración:** 0 · **Acta:** 11/10
+
 **Contexto:** el enunciado exige una arquitectura cliente-servidor con múltiples clientes (escritorio, web, móvil) y Maven multimódulo.
-**Decisión:** usar un único repositorio con la estructura:
+
+**Decisión:** usar un único repositorio con la estructura Maven.
+
+### Uso de Copilot en el repositorio.
+Se han llevado a cabo dos commits con la colaboración de Copilot en la rama feature/estructura-maven al implementar el pom.xml padre. Está rama se desarrollo durante una sesión de prácticas y se utilizó la ayuda del agente de Copilot para generar una propuesta válida del mensaje del propio commit. El resto de la implementación de la rama mencionada se hizo manualmente por los miembros del equipo de desarrollo. 
 
 ## Iteración 1 — CDU1: Inicio de sesión (RF01)
 
@@ -68,6 +73,22 @@ Se conserva `AutenticacionServiceImpl`, que sigue proporcionando la autenticaci�
 
 **Resultado:** quedan 18 pruebas: 14 del servicio del servidor y 4 del adaptador del cliente. La ejecución de `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas.
 
+### Pruebas de la pantalla de inicio de sesión
+
+**Decisión implementada en la PR #50:** añadir `LoginGUITest` para probar la pantalla con un servicio de autenticación falso, sin depender del servidor.
+
+Las pruebas comprueban el acceso correcto, la clave incorrecta, los campos vacíos sin llamar al servicio, los espacios alrededor del usuario, el vaciado del campo de contraseña, el título de la ventana y el método `main`.
+
+**Resultado:** `LoginGUI` pasa del 0 % al 100 % de cobertura. El CU01 queda con 26 pruebas: 14 del servicio del servidor, 4 del adaptador y 8 de la pantalla.
+
+### Pruebas de acceso no autorizado
+
+**Decisión:** en el CDU1, las pruebas de acceso no autorizado comprueban que nadie obtiene una sesión ni un rol que no le corresponde, ya que este caso de uso asigna los roles y no tiene acciones reservadas a un rol concreto.
+
+Se utilizan las pruebas existentes de `AutenticacionServiceImplTest` (clave incorrecta, usuario desconocido, variantes, valores vacíos y nulos, y rol propio de cada usuario) y una comprobación manual en la pantalla de inicio de sesión. El control de las acciones reservadas a cada rol se prueba en los casos de uso que las implementan, como el CDU4.
+
+**Justificación:** cumplir la actividad de pruebas de acceso no autorizado (RNF-SEG-02 y RNF-SEG-04) sin duplicar pruebas. El resultado y las capturas están en la wiki, página "Iteración 1", apartado "Pruebas de acceso no autorizado".
+
 ### Trazabilidad
 
 - [Issue #9 — Entregar Iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/issues/9).
@@ -75,6 +96,74 @@ Se conserva `AutenticacionServiceImpl`, que sigue proporcionando la autenticaci�
 - [PR #37 — Revisión de tests y eliminación del simulador](https://github.com/SheilaCS/ISO2-2026-C201/pull/37).
 - [Documentación de la iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-1).
 - [PR #40 — Ampliación de pruebas con clases de equivalencia y valores límite](https://github.com/SheilaCS/ISO2-2026-C201/pull/40).
+- [PR #50 — Pruebas de la pantalla de inicio de sesión](https://github.com/SheilaCS/ISO2-2026-C201/pull/50).
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+## Iteración 2 — CDU2: Solicitar pruebas médicas (RF03)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `ISolicitudService`, implementado por `SolicitudServiceImpl`. El servicio valida los datos de la solicitud y confirma su registro, sin persistencia en base de datos en esta fase.
+
+**Justificación:** el proyecto no utiliza base de datos en esta iteración y el objetivo del CDU2 es fijar el contrato y las reglas de validación del alta de solicitudes. La persistencia real se abordará en una versión posterior.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas.
+
+- El tipo de prueba es obligatorio y no puede quedar vacío ni compuesto solo por espacios.
+- La prioridad es obligatoria y debe ser una de `URGENTE`, `PREFERENTE` u `ORDINARIO`, sin distinguir mayúsculas y tolerando espacios exteriores.
+- Cualquier otro valor de prioridad o un tipo de prueba vacío provocan el rechazo de la solicitud.
+
+**Justificación:** evitar solicitudes sin información clínica útil y unificar los valores de prioridad admitidos por el sistema.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `SolicitudHttpClient` y el servidor `SolicitudHttpHandler`, que escucha en `127.0.0.1`, puerto 8083. La creación de la solicitud se expone en `/solicitudes/crear` y la consulta en `/solicitudes/consultar`, con formularios codificados en UTF-8.
+
+**Justificación:** seguir la misma estructura que el módulo de citas y poder probar cada parte con un servidor o un cliente simulado.
+
+### Validación en cliente y servidor
+
+**Decisión:** comprobar los datos en el cliente con `ValidacionesSolicitudes` antes de enviar la petición, y repetir las comprobaciones en `SolicitudServiceImpl`.
+
+Las validaciones del cliente son `validarId(String)`, `validarTexto(String)` y `validarPrioridad(String)`.
+
+**Justificación:** mostrar respuestas rápidas al usuario sin depender únicamente de la validación del cliente.
+
+### Interfaz del cliente
+
+**Decisión:** construir `SolicitudGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(4, 2)` con los campos `ID Paciente`, `ID Solicitud`, `Tipo de Prueba` y `Prioridad`, y dos botones `Crear Solicitud` y `Consultar Solicitud`. El resultado se muestra en un `JTextArea` no editable. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `SolicitudGUI(SolicitudHttpClient)` permite inyectar un cliente simulado.
+
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y separar la lógica de red de la presentación.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la trazabilidad entre código de producción y código de prueba.
+
+- El servicio se prueba verificando todas las prioridades válidas y los distintos escenarios de rechazo por datos incorrectos.
+- El servidor HTTP se prueba arrancándolo en un puerto libre y realizando peticiones GET y POST reales.
+- El cliente HTTP se prueba mediante un servidor HTTP embebido que simula el comportamiento del servidor.
+- La interfaz gráfica se prueba utilizando clientes simulados para aislar la lógica de presentación de la comunicación real.
+- Se verifican tanto los flujos correctos como los errores de validación y los errores de conexión.
+- Los casos de prueba se diseñan mediante clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+
+**Resultado:**
+
+Se ejecutaron correctamente **64 pruebas automatizadas**:
+
+- **Servidor:** 20 pruebas.
+- **Cliente:** 44 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+
+### Trazabilidad
+
+- [Issue #10 — Entregar Iteración 2 (RF06)](https://github.com/SheilaCS/ISO2-2026-C201/issues/10).
+- [PR #57 — Integración de CDU2](https://github.com/SheilaCS/ISO2-2026-C201/pull/57).
+- [Documentación de la iteración 2](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-2).
+
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -127,6 +216,169 @@ La aprobación y la integración de cada cambio se acreditan mediante el histori
 - [Documentación de la iteración 3](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-3).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
+
+## Iteración 4 — CDU4: Gestión de pacientes (RF12)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IPacientesService`, implementado por `PacientesServiceImpl`, y separar el almacenamiento mediante `RepositorioPacientes` y `RepositorioPacientesEnMemoria`.
+
+Los pacientes se representan mediante un record inmutable y se identifican con un UUID generado por el servidor.
+
+**Justificación:** separar responsabilidades, facilitar las pruebas y mantener los datos en memoria sin incorporar una base de datos.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas:
+
+- CIP obligatorio, único e inmutable, normalizado a mayúsculas y sin espacios exteriores.
+- Nombre y apellidos obligatorios y fecha de nacimiento no futura.
+- Modificación únicamente de nombre, apellidos y fecha de nacimiento de pacientes activos.
+- Baja lógica, conservando los datos y sin permitir reutilizar el CIP.
+- Rechazo de modificaciones y nuevas bajas de pacientes inactivos.
+- Ninguna operación rechazada guarda cambios parciales.
+
+**Justificación:** evitar duplicados y conservar la coherencia de los pacientes y sus referencias.
+
+La baja lógica es definitiva: no se ofrece una operación para reactivar a un paciente inactivo. Si fuera necesaria, se incorporaría como un requisito nuevo en una versión posterior.
+
+### Comunicación y permisos
+
+**Decisión:** comunicar `PacientesHttpClient` con `GestionPacientesHttpServer` mediante HTTP, en el puerto predeterminado 8087, utilizando formularios codificados en UTF-8.
+
+El servidor reutiliza la autenticación de demostración mediante HTTP Basic y permite las operaciones solo al rol `ADMINISTRATIVO`: responde 401 ante credenciales inválidas y 403 ante un rol no autorizado.
+
+**Justificación:** seguir el mecanismo HTTP del proyecto sin añadir dependencias. La autenticación básica se limita al entorno local; fuera de él requiere HTTPS.
+
+### Integración
+
+**Decisión:** no crear una rama de integración independiente. El servidor se incorporó a `develop` en la PR #51, y la rama del cliente incorporó `develop` antes de integrarse mediante la PR #53.
+
+**Justificación:** la rama del cliente ya reunía ambas partes, por lo que una tercera rama no aportaba nada. Antes de fusionar se comprobó el flujo completo contra el servidor real: alta, consulta, modificación y baja.
+
+### Correcciones del cliente
+
+**Decisión:** utilizar UUID también en el cliente, cargar las respuestas en la tabla y decodificar cada campo por separado.
+
+La baja solo se refleja si el servidor la acepta. El botón `Nuevo/Limpiar` desbloquea el CIP para gestionar otro paciente, conservando la tabla y las credenciales.
+
+**Justificación:** asegurar la compatibilidad con el servidor y evitar estados incorrectos en la pantalla.
+
+### Pruebas de acceso no autorizado
+
+**Decisión implementada en la PR #62:** comprobar que los roles distintos de `ADMINISTRATIVO` (`MEDICO`, `PACIENTE` y `ADMINISTRADOR`) no pueden dar de alta, modificar ni dar de baja pacientes, y que los datos no cambian tras el rechazo.
+
+Se añade una prueba parametrizada a `GestionPacientesHttpServerTest` con 9 casos (3 roles × 3 operaciones). Cada caso comprueba la respuesta `403`, que el paciente conserva sus datos y sigue activo, y que no se crea ningún paciente nuevo. Hasta entonces, el rechazo solo se comprobaba en la consulta.
+
+**Justificación:** el CDU4 maneja datos clínicos y tiene acciones de modificación, por lo que debe evaluar la confidencialidad (RNF-SEG-02 y RNF-SEG-04) y la integridad (RNF-SEG-05). La prueba falla si se elimina la comprobación del rol en el servidor. La comprobación manual y las capturas están en la wiki, página "Iteración 4".
+
+### Diagramas
+
+**Decisión:** realizar los diagramas en Visual Paradigm con el mismo formato que el resto de iteraciones. Las clases de diseño se obtienen mediante ingeniería inversa del código; la clase `Paciente`, al ser un record, se completa manualmente. Los diagramas de secuencia representan el alta de un paciente, la operación principal, en el servidor y en el cliente.
+
+**Justificación:** mantener la correspondencia entre los diagramas y el código, y la coherencia con la documentación de las demás iteraciones.
+
+### Pruebas y revisión
+
+**Decisión:** mantener los tests en `src/test/java`, con `@DisplayName` en español y casos representativos de validaciones, operaciones y permisos.
+
+**Resultado:** 61 pruebas del servidor (incluidas las 9 de acceso no autorizado) y 21 del cliente superadas. El paquete de pacientes del servidor alcanza un 96,93 % de cobertura de líneas y un 100 % de ramas, y el del cliente un 96,34 % de líneas y un 83,55 % de ramas.
+
+Mateo implementó el servidor y sus pruebas, y Tomás el cliente. Juan Manuel y Mateo corrigieron el cliente tras la revisión. La revisión independiente y la comprobación contra el servidor real quedaron registradas en la PR #53.
+
+### Documentación de las pruebas de acceso no autorizado
+
+**Decisión:** cada iteración con datos clínicos incluye en su página de la wiki un apartado "Pruebas de acceso no autorizado" con una tabla de intentos por rol, la captura de la prueba unitaria y la captura de la comprobación manual, y una fila en su resumen.
+
+**Justificación:** dejar evidencia homogénea de RNF-SEG-02, RNF-SEG-04 y, en las acciones de modificación, RNF-SEG-05. Aplicado en las iteraciones 1 y 4; la plantilla de la iteración 7 ya lo incluye.
+
+### Trazabilidad
+
+- [Issue #13 — Iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/issues/13).
+- [PR #51 — Servidor y pruebas](https://github.com/SheilaCS/ISO2-2026-C201/pull/51).
+- [PR #53 — Cliente y correcciones](https://github.com/SheilaCS/ISO2-2026-C201/pull/53).
+- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-4).
+- [PR #59 — Decisiones de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/pull/59).
+- [PR #62 — Pruebas de acceso no autorizado](https://github.com/SheilaCS/ISO2-2026-C201/pull/62).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+## Iteración 5 — CDU5: Configurar parámetros (RF05)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IParametroService`, implementado por `ParametroServiceImpl`, que guarda los parámetros en memoria mediante un `HashMap`.
+
+**Justificación:** el proyecto no utiliza base de datos en esta fase. La lógica de almacenamiento queda separada del transporte HTTP.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas.
+
+- `guardarParametro(clave, valor)` solo almacena la pareja cuando ambos son no nulos; en caso contrario no modifica el mapa.
+- `obtenerParametro(clave)` devuelve `"No encontrado"` cuando la clave no existe.
+
+**Justificación:** evitar entradas corruptas en el mapa y ofrecer una respuesta controlada al cliente cuando se consulta una clave desconocida.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `ParametrosHttpClient` y el servidor `ParametroHttpHandler`, que escucha en `127.0.0.1`, puerto 8084. El guardado se expone en `/parametros/guardar` y la consulta en `/parametros/consultar`, con formularios codificados en UTF-8.
+
+**Justificación:** seguir la misma estructura que el resto de módulos y poder probar cada parte con un servidor o un cliente simulado.
+
+### Limitación conocida del servidor
+
+**Decisión:** en esta versión, `ParametroHttpHandler` no persiste los valores enviados: la respuesta de `/guardar` es un eco del par recibido y la de `/consultar` devuelve un valor simulado. La lógica real ya existe en `ParametroServiceImpl`, pero aún no está cableada al handler.
+
+**Justificación:** el objetivo de la iteración es fijar el contrato HTTP y la pantalla de configuración. El cableado definitivo entre handler y servicio se hará cuando se integre la persistencia.
+
+### Validación en cliente
+
+**Decisión:** comprobar los datos en el cliente con `ValidacionesParametros`:
+
+- `validarTexto(String)`: no nulo y no vacío tras `trim()`.
+- `validarNumeroPositivo(String)`: entero mayor o igual que cero, tolerante a espacios.
+
+La GUI lanza `IllegalArgumentException` con mensaje en español cuando la validación falla.
+
+**Justificación:** ofrecer respuesta inmediata al usuario y reutilizar validaciones comunes con el resto de módulos.
+
+### Interfaz del cliente
+
+**Decisión:** construir `ParametroGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(2, 2)` con los campos `Clave del parámetro` y `Valor`, y dos botones `Guardar` y `Consultar`. El resultado se muestra en un `JTextArea` no editable. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `ParametroGUI(ParametrosHttpClient)` permite inyectar un cliente simulado.
+
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y separar la lógica de red de la presentación.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la localización de incidencias y el mantenimiento de la batería de pruebas.
+
+- El servicio se prueba verificando el almacenamiento, recuperación y actualización de parámetros.
+- El servidor HTTP se prueba arrancándolo sobre un puerto libre y enviando peticiones HTTP reales.
+- El cliente HTTP se prueba mediante un servidor embebido que simula las respuestas del servidor.
+- La interfaz gráfica se prueba mediante clientes simulados que permiten validar el comportamiento sin dependencias externas.
+- Se validan tanto operaciones correctas como situaciones de error y entradas inválidas.
+- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+
+**Resultado:**
+
+Se ejecutaron correctamente **45 pruebas automatizadas**:
+
+- **Servidor:** 12 pruebas.
+- **Cliente:** 33 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+
+### Trazabilidad
+
+- [Issue #14 — Entregar Iteración 5 (RF17)](https://github.com/SheilaCS/ISO2-2026-C201/issues/14).
+- [PR #60 — Integración de CDU5](https://github.com/SheilaCS/ISO2-2026-C201/pull/60).
+- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-5).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
 ## Iteración 6 — CDU6: Gestionar agendas (RF14)
 
 ### Servicio y comunicación
@@ -167,6 +419,76 @@ Los horarios se guardan en memoria.
 - [PR #46 — Integración de CDU6](https://github.com/SheilaCS/ISO2-2026-C201/pull/46).
 - [Documentación de la iteración 6](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-6).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+## Iteración 8 — CDU8: Generar informes de mantenimiento (RF08)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IInformeService`, implementado por `InformeServiceImpl`. El servicio valida la petición, comprueba el rol y confirma la generación del informe, sin persistencia en base de datos en esta fase.
+
+**Justificación:** el objetivo del CDU8 en esta iteración es fijar el contrato, las reglas de seguridad y las validaciones del informe de mantenimiento. La persistencia real se abordará en una versión posterior.
+
+### Reglas de negocio y seguridad
+
+**Decisión:** aplicar las siguientes reglas.
+
+- El acceso está limitado a los roles `TECNICO` y `ADMIN`, comparados tras `trim()` y `toUpperCase()`.
+- El `idEquipo` debe ser un entero mayor que 0.
+- La `descripcion` no puede ser nula ni vacía.
+- La `fecha` debe ser parseable como `LocalDate` en formato `AAAA-MM-DD`.
+- Cualquier incumplimiento provoca el rechazo de la operación sin generar el informe.
+
+**Justificación:** los informes de mantenimiento solo deben ser accesibles al personal técnico o administrador. La validación en servidor evita que un cliente manipulado pueda saltarse las comprobaciones del cliente.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `InformesHttpClient` y el servidor `InformeHttpHandler`, que escucha en `127.0.0.1`, puerto 8085. La generación se expone en `/informes/generar` y la consulta en `/informes/consultar`, con formularios codificados en UTF-8. El handler convierte los parámetros numéricos con `parsearEntero(String)`, que devuelve `-1` ante valores no numéricos para que la validación del servicio los rechace sin lanzar `NumberFormatException`.
+
+**Justificación:** seguir la misma estructura que el resto de módulos, evitar errores no controlados ante entradas malformadas y permitir aplicar RBAC a partir del rol recibido.
+
+### Validación en cliente y servidor
+
+**Decisión:** comprobar los datos en el cliente con `ValidacionesInformes` antes de enviar la petición, y repetir las comprobaciones en `InformeServiceImpl`.
+
+Las validaciones del cliente son `validarId(String)`, `validarTexto(String)`, `validarFecha(String)` y `tienePermiso(String)`, que acepta únicamente `TECNICO` o `ADMIN`.
+
+**Justificación:** mostrar respuestas rápidas al usuario, reforzar el RBAC en el cliente y reutilizar el mismo criterio de permisos que el servidor.
+
+### Interfaz del cliente
+
+**Decisión:** construir `InformeGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(5, 2)` con los campos `Rol`, `ID Equipo`, `Fecha`, `Descripción` e `ID Informe`, y dos botones `Generar Informe` y `Consultar Informe`. El campo de rol se precarga con `TECNICO`. El resultado se muestra en un `JTextArea` no editable. Los errores de seguridad se muestran con `WARNING_MESSAGE` bajo el título `Seguridad`; el resto, con `ERROR_MESSAGE`. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `InformeGUI(InformesHttpClient)` permite inyectar un cliente simulado.
+
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing, distinguir visualmente los rechazos de seguridad y separar la lógica de red de la presentación.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para asegurar la correspondencia directa entre cada componente y sus pruebas asociadas.
+
+- El servicio se prueba verificando las validaciones funcionales y las restricciones de seguridad basadas en roles.
+- El servidor HTTP se prueba mediante peticiones reales enviadas a un servidor embebido arrancado en un puerto libre.
+- El cliente HTTP se prueba utilizando servidores simulados para validar la construcción y envío de peticiones.
+- La interfaz gráfica se prueba mediante clientes simulados para verificar validaciones, permisos, mensajes de error y resultados mostrados al usuario.
+- Se comprueba tanto el comportamiento correcto como los escenarios de error, acceso denegado y fallos de comunicación.
+- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+
+**Resultado:**
+
+Se ejecutaron correctamente **75 pruebas automatizadas**:
+
+- **Servidor:** 27 pruebas.
+- **Cliente:** 48 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+
+### Trazabilidad
+
+- [Issue #XX — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/XX).
+- [PR #XX — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/XX).
+- [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-8).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
 
 ## Iteración 9 — CDU9: Gestionar mis citas (RF02)
 
