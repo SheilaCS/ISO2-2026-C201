@@ -33,8 +33,9 @@ public class GestionHistorialHttpServer {
         return crearServidor(
                 puerto,
                 new HistorialServiceImpl(
-                        new ProveedorHistorialEnMemoria(),
-                        new RegistroConsultas()),
+                        new ProveedorHistorialRealizacion(),
+                        new RegistroConsultas(),
+                        new VinculoPacienteEnMemoria()),
                 new AutenticacionServiceImpl());
     }
 
@@ -216,7 +217,7 @@ public class GestionHistorialHttpServer {
     }
 
     public static void main(String[] args) throws IOException {
-        int puerto = Integer.getInteger("historial.puerto", 8085);
+        int puerto = Integer.getInteger("historial.puerto", 8088);
         HttpServer servidor = crearServidor(puerto);
         servidor.start();
         System.out.println(

@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sescam.radiodiagnostico.autenticacion.AutenticacionServiceImpl;
 import com.sun.net.httpserver.HttpServer;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -34,20 +36,20 @@ class GestionHistorialHttpServerTest {
     void prepararServidor() throws Exception {
         ProveedorHistorialEnMemoria proveedor =
                 new ProveedorHistorialEnMemoria();
-        proveedor.agregar("paciente.demo", new PruebaRealizada(
+        proveedor.agregar("1", new PruebaRealizada(
                 "P1", LocalDate.of(2026, 1, 10), "Radiografia",
                 "REALIZADA", "Sin hallazgos"));
-        proveedor.agregar("paciente.demo", new PruebaRealizada(
+        proveedor.agregar("1", new PruebaRealizada(
                 "P2", LocalDate.of(2026, 3, 5), "Ecografia",
                 "REALIZADA", "Control; revisar"));
-        proveedor.agregar("otro.paciente", new PruebaRealizada(
+        proveedor.agregar("2", new PruebaRealizada(
                 "P3", LocalDate.of(2026, 2, 1), "Resonancia",
                 "REALIZADA", "Informe"));
 
         registro = new RegistroConsultas();
         servidor = GestionHistorialHttpServer.crearServidor(
                 0,
-                new HistorialServiceImpl(proveedor, registro),
+                new HistorialServiceImpl(proveedor, registro, new VinculoPacienteEnMemoria()),
                 new AutenticacionServiceImpl());
         servidor.start();
 
@@ -69,7 +71,7 @@ class GestionHistorialHttpServerTest {
     void pacienteConsultaSuHistorial() throws Exception {
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo",
+                "GET", "/historial?paciente=1",
                 basic("paciente.demo:demo"));
 
         // Comprobar
@@ -91,7 +93,7 @@ class GestionHistorialHttpServerTest {
     void medicoConsultaOtroPaciente() throws Exception {
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=otro.paciente",
+                "GET", "/historial?paciente=2",
                 basic("medico.demo:demo"));
 
         // Comprobar
@@ -118,9 +120,11 @@ class GestionHistorialHttpServerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "paciente.demo:demo, otro.paciente, 403",
-            "administrativo.demo:demo, paciente.demo, 403",
-            "admin.demo:demo, paciente.demo, 403"
+            "paciente.demo:demo, 2, 403",
+            "paciente.demo:demo, paciente.demo, 403",
+            "paciente.demo:demo, 01, 403",
+            "administrativo.demo:demo, 1, 403",
+            "admin.demo:demo, 1, 403"
     })
     @DisplayName("Acceso no autorizado: roles sin permiso o historial ajeno devuelven 403")
     void rechazaRolesSinPermiso(String credenciales, String paciente,
@@ -149,7 +153,7 @@ class GestionHistorialHttpServerTest {
             throws Exception {
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo", autorizacion);
+                "GET", "/historial?paciente=1", autorizacion);
 
         // Comprobar
         assertAll(
@@ -182,7 +186,7 @@ class GestionHistorialHttpServerTest {
     void rechazaMetodoNoPermitido() throws Exception {
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "POST", "/historial?paciente=paciente.demo",
+                "POST", "/historial?paciente=1",
                 basic("medico.demo:demo"));
 
         // Comprobar
@@ -197,9 +201,9 @@ class GestionHistorialHttpServerTest {
     @DisplayName("Las consultas por HTTP quedan anotadas en el registro")
     void registraLasConsultas() throws Exception {
         // Ejecutar
-        enviar("GET", "/historial?paciente=paciente.demo",
+        enviar("GET", "/historial?paciente=1",
                 basic("paciente.demo:demo"));
-        enviar("GET", "/historial?paciente=otro.paciente",
+        enviar("GET", "/historial?paciente=2",
                 basic("paciente.demo:demo"));
 
         // Comprobar
@@ -213,7 +217,7 @@ class GestionHistorialHttpServerTest {
             throws Exception {
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo",
+                "GET", "/historial?paciente=1",
                 basic(credenciales));
 
         // Comprobar
@@ -226,13 +230,13 @@ class GestionHistorialHttpServerTest {
         // Preparar
         ProveedorHistorialEnMemoria incompleto =
                 new ProveedorHistorialEnMemoria();
-        incompleto.agregar("paciente.demo", new PruebaRealizada(
+        incompleto.agregar("1", new PruebaRealizada(
                 "P9", LocalDate.of(2026, 1, 1), null, null, null));
-        reiniciarServidor(new HistorialServiceImpl(incompleto, registro));
+        reiniciarServidor(new HistorialServiceImpl(incompleto, registro, new VinculoPacienteEnMemoria()));
 
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo",
+                "GET", "/historial?paciente=1",
                 basic("medico.demo:demo"));
 
         // Comprobar
@@ -263,11 +267,11 @@ class GestionHistorialHttpServerTest {
         IHistorialPruebasProveedor caido = idPaciente -> {
             throw new IllegalStateException("Sin conexion");
         };
-        reiniciarServidor(new HistorialServiceImpl(caido, registro));
+        reiniciarServidor(new HistorialServiceImpl(caido, registro, new VinculoPacienteEnMemoria()));
 
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo",
+                "GET", "/historial?paciente=1",
                 basic("medico.demo:demo"));
 
         // Comprobar
@@ -288,7 +292,7 @@ class GestionHistorialHttpServerTest {
 
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo",
+                "GET", "/historial?paciente=1",
                 basic("medico.demo:demo"));
 
         // Comprobar
@@ -310,7 +314,7 @@ class GestionHistorialHttpServerTest {
 
         // Ejecutar
         HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo",
+                "GET", "/historial?paciente=1",
                 basic("medico.demo:demo"));
 
         // Comprobar
@@ -318,30 +322,90 @@ class GestionHistorialHttpServerTest {
     }
 
     @Test
-    @DisplayName("El servidor creado sin servicio propio responde con historial vacío")
-    void servidorPorDefecto() throws Exception {
-        // Preparar
-        servidor.stop(0);
-        servidor = GestionHistorialHttpServer.crearServidor(0);
-        servidor.start();
-        base = "http://127.0.0.1:" + servidor.getAddress().getPort();
+    @DisplayName("El servidor creado sin servicio propio usa el proveedor real: sin realizaciones responde 503")
+    void servidorPorDefectoSinRealizaciones() throws Exception {
+        // Preparar: puertos cerrados para realizaciones y citas
+        String anteriorR = System.getProperty("realizacion.puerto");
+        String anteriorC = System.getProperty("citas.puerto");
+        System.setProperty("realizacion.puerto", puertoLibre());
+        System.setProperty("citas.puerto", puertoLibre());
 
-        // Ejecutar
-        HttpResponse<String> respuesta = enviar(
-                "GET", "/historial?paciente=paciente.demo",
-                basic("medico.demo:demo"));
+        try {
+            reiniciarPorDefecto();
 
-        // Comprobar
-        assertAll(
-                () -> assertEquals(200, respuesta.statusCode()),
-                () -> assertTrue(respuesta.body().isEmpty())
-        );
+            // Ejecutar
+            HttpResponse<String> respuesta = enviar(
+                    "GET", "/historial?paciente=1",
+                    basic("medico.demo:demo"));
+
+            // Comprobar
+            assertAll(
+                    () -> assertEquals(503, respuesta.statusCode()),
+                    () -> assertTrue(respuesta.body().startsWith("error="))
+            );
+        } finally {
+            restaurar("realizacion.puerto", anteriorR);
+            restaurar("citas.puerto", anteriorC);
+        }
+    }
+
+    @Test
+    @DisplayName("Lo registrado en realizaciones aparece en el historial: el médico ve cualquier paciente y el paciente solo el suyo")
+    void servidorPorDefectoConDatosReales() throws Exception {
+        // Preparar: servidores falsos de realizaciones (CDU7) y citas
+        HttpServer realizaciones = falso("/realizaciones",
+                "id=r1&idCita=5&idSolicitud=9&fechaRealizacion=2026-05-01"
+                        + "&observaciones=Todo+bien&incidencia=&estado=REALIZADA");
+        HttpServer citas = falso("/citas/consultar",
+                "ID cita: 5\nID solicitud: 9\nID paciente: 1\nEstado: ACTIVA");
+        String anteriorR = System.getProperty("realizacion.puerto");
+        String anteriorC = System.getProperty("citas.puerto");
+        System.setProperty("realizacion.puerto",
+                Integer.toString(realizaciones.getAddress().getPort()));
+        System.setProperty("citas.puerto",
+                Integer.toString(citas.getAddress().getPort()));
+
+        try {
+            reiniciarPorDefecto();
+
+            // Ejecutar
+            HttpResponse<String> delMedico = enviar(
+                    "GET", "/historial?paciente=1",
+                    basic("medico.demo:demo"));
+            HttpResponse<String> delPaciente = enviar(
+                    "GET", "/historial?paciente=1",
+                    basic("paciente.demo:demo"));
+            HttpResponse<String> ajeno = enviar(
+                    "GET", "/historial?paciente=2",
+                    basic("paciente.demo:demo"));
+            HttpResponse<String> sinPruebas = enviar(
+                    "GET", "/historial?paciente=2",
+                    basic("medico.demo:demo"));
+
+            // Comprobar
+            String linea =
+                    "r1;2026-05-01;Prueba de la solicitud 9;REALIZADA;Todo bien";
+            assertAll(
+                    () -> assertEquals(200, delMedico.statusCode()),
+                    () -> assertEquals(linea, delMedico.body()),
+                    () -> assertEquals(200, delPaciente.statusCode()),
+                    () -> assertEquals(linea, delPaciente.body()),
+                    () -> assertEquals(403, ajeno.statusCode()),
+                    () -> assertEquals(200, sinPruebas.statusCode()),
+                    () -> assertTrue(sinPruebas.body().isEmpty())
+            );
+        } finally {
+            realizaciones.stop(0);
+            citas.stop(0);
+            restaurar("realizacion.puerto", anteriorR);
+            restaurar("citas.puerto", anteriorC);
+        }
     }
 
     @Test
     @DisplayName("El método main arranca el servidor en el puerto indicado")
     void ejecutarMain() throws Exception {
-        // Preparar: puerto 0 para no ocupar el 8085
+        // Preparar: puerto 0 para no ocupar el 8088
         System.setProperty("historial.puerto", "0");
 
         try {
@@ -350,6 +414,44 @@ class GestionHistorialHttpServerTest {
                     new String[0]));
         } finally {
             System.clearProperty("historial.puerto");
+        }
+    }
+
+    // Sustituye el servidor de la prueba por el creado por defecto
+    private void reiniciarPorDefecto() throws Exception {
+        servidor.stop(0);
+        servidor = GestionHistorialHttpServer.crearServidor(0);
+        servidor.start();
+        base = "http://127.0.0.1:" + servidor.getAddress().getPort();
+    }
+
+    // Servidor falso que siempre responde 200 con el mismo cuerpo
+    private static HttpServer falso(String ruta, String cuerpo)
+            throws Exception {
+        HttpServer falso = HttpServer.create(
+                new InetSocketAddress("127.0.0.1", 0), 0);
+        falso.createContext(ruta, ex -> {
+            byte[] bytes = cuerpo.getBytes(StandardCharsets.UTF_8);
+            ex.sendResponseHeaders(200, bytes.length);
+            ex.getResponseBody().write(bytes);
+            ex.close();
+        });
+        falso.start();
+        return falso;
+    }
+
+    // Puerto que no tiene nada escuchando
+    private static String puertoLibre() throws Exception {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return Integer.toString(socket.getLocalPort());
+        }
+    }
+
+    private static void restaurar(String propiedad, String anterior) {
+        if (anterior == null) {
+            System.clearProperty(propiedad);
+        } else {
+            System.setProperty(propiedad, anterior);
         }
     }
 

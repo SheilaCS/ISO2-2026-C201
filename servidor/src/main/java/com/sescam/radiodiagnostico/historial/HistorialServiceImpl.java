@@ -5,6 +5,7 @@ import com.sescam.radiodiagnostico.autenticacion.Sesion;
 import com.sescam.radiodiagnostico.historial.ResultadoHistorial.Estado;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * SERVICIO DE HISTORIAL DE PRUEBAS.
@@ -12,16 +13,23 @@ import java.util.List;
  *
  * Aplica el control de acceso por rol y anota cada consulta.
  * Orden de las comprobaciones: sesion, rol, datos y propiedad.
+ *
+ * El paciente solo puede ver el historial del numero de paciente
+ * que tiene vinculado su usuario (IVinculoPaciente); el servicio no
+ * se fia del identificador que envia el cliente.
  */
 public class HistorialServiceImpl implements IHistorialService {
 
     private final IHistorialPruebasProveedor proveedor;
     private final RegistroConsultas registro;
+    private final IVinculoPaciente vinculo;
 
     public HistorialServiceImpl(IHistorialPruebasProveedor proveedor,
-                                RegistroConsultas registro) {
+                                RegistroConsultas registro,
+                                IVinculoPaciente vinculo) {
         this.proveedor = proveedor;
         this.registro = registro;
+        this.vinculo = vinculo;
     }
 
     @Override
@@ -45,9 +53,18 @@ public class HistorialServiceImpl implements IHistorialService {
                     "Identificador de paciente incorrecto.");
         }
 
-        if (rol == Rol.PACIENTE && !idPaciente.equals(usuario)) {
-            return rechazar(usuario, rol, idPaciente, Estado.PROHIBIDO,
-                    "Un paciente solo puede consultar su historial.");
+        if (rol == Rol.PACIENTE) {
+            Optional<String> propio = vinculo.idPacienteDe(usuario);
+
+            if (propio.isEmpty()) {
+                return rechazar(usuario, rol, idPaciente, Estado.PROHIBIDO,
+                        "Su usuario no tiene un paciente asociado.");
+            }
+
+            if (!propio.get().equals(idPaciente.trim())) {
+                return rechazar(usuario, rol, idPaciente, Estado.PROHIBIDO,
+                        "Un paciente solo puede consultar su historial.");
+            }
         }
 
         try {

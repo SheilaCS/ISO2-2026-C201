@@ -7,9 +7,10 @@ import java.util.List;
  * Iteracion 12 - RF04.
  *
  * Define lo que necesita el historial del registro de pruebas
- * realizadas (RF10, CDU7). Mientras ese caso de uso no exista, se usa
- * un origen simulado en memoria. Si el origen no esta disponible,
- * las implementaciones lanzan IllegalStateException.
+ * realizadas (CDU7). El origen real es ProveedorHistorialRealizacion;
+ * ProveedorHistorialEnMemoria solo se usa en las pruebas. Si el
+ * origen no esta disponible, las implementaciones lanzan
+ * IllegalStateException.
  */
 public interface IHistorialPruebasProveedor {
 

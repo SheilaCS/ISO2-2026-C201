@@ -24,8 +24,7 @@ import java.util.List;
 public class HistorialHttpClient {
 
     // Direccion normal del servidor del historial
-    public static final String URL_POR_DEFECTO =
-            "http://localhost:8085/historial";
+    public static final String URL_POR_DEFECTO ="http://localhost:8088/historial";
 
     private final String urlBase;
 

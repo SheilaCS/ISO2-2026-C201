@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -29,13 +30,16 @@ class HistorialServiceImplTest {
 
     private ProveedorHistorialEnMemoria proveedor;
     private RegistroConsultas registro;
+    private VinculoPacienteEnMemoria vinculo;
     private HistorialServiceImpl servicio;
 
     @BeforeEach
     void preparar() {
         proveedor = new ProveedorHistorialEnMemoria();
         registro = new RegistroConsultas();
-        servicio = new HistorialServiceImpl(proveedor, registro);
+        vinculo = new VinculoPacienteEnMemoria("");
+        vinculo.vincular("paciente1", "paciente1");
+        servicio = new HistorialServiceImpl(proveedor, registro, vinculo);
 
         proveedor.agregar("paciente1", new PruebaRealizada(
                 "P1", LocalDate.of(2026, 1, 10), "Radiografia",
@@ -91,6 +95,88 @@ class HistorialServiceImplTest {
                 () -> assertEquals(Estado.PROHIBIDO, resultado.estado()),
                 () -> assertTrue(resultado.pruebas().isEmpty())
         );
+    }
+
+    // Tabla de casos del vinculo: clases de equivalencia y valores limite
+    // del identificador pedido por un paciente cuyo usuario es
+    // "paciente.demo" y cuyo numero de paciente es 1
+    @ParameterizedTest(name = "paciente.demo pide \"{0}\" -> {1}")
+    @CsvSource(delimiter = '|', value = {
+            "1|CORRECTO",
+            "2|PROHIBIDO",
+            "01|PROHIBIDO",
+            "10|PROHIBIDO",
+            "0|PROHIBIDO",
+            "paciente.demo|PROHIBIDO"
+    })
+    @DisplayName("El paciente solo accede al número de paciente vinculado a su usuario, no al nombre de usuario")
+    void pacienteConVinculoDistintoDelUsuario(String pedido, Estado esperado) {
+        // Preparar
+        vinculo.vincular("paciente.demo", "1");
+        proveedor.agregar("1", new PruebaRealizada(
+                "R1", LocalDate.of(2026, 4, 1), "Radiografia",
+                "REALIZADA", "Normal"));
+        Sesion sesion = new Sesion("paciente.demo", Rol.PACIENTE);
+
+        // Ejecutar
+        ResultadoHistorial resultado =
+                servicio.consultarHistorial(sesion, pedido);
+
+        // Comprobar
+        assertAll(
+                () -> assertEquals(esperado, resultado.estado()),
+                () -> assertEquals(esperado == Estado.CORRECTO ? 1 : 0,
+                        resultado.pruebas().size())
+        );
+    }
+
+    @Test
+    @DisplayName("Un identificador con espacios alrededor se acepta si es el del paciente")
+    void identificadorConEspacios() {
+        // Preparar
+        vinculo.vincular("paciente.demo", "1");
+        Sesion sesion = new Sesion("paciente.demo", Rol.PACIENTE);
+
+        // Ejecutar
+        ResultadoHistorial resultado =
+                servicio.consultarHistorial(sesion, " 1 ");
+
+        // Comprobar
+        assertEquals(Estado.CORRECTO, resultado.estado());
+    }
+
+    @Test
+    @DisplayName("Un paciente sin número vinculado se rechaza y la consulta queda anotada")
+    void pacienteSinVinculo() {
+        // Preparar
+        Sesion sinVinculo = new Sesion("paciente.nuevo", Rol.PACIENTE);
+
+        // Ejecutar
+        ResultadoHistorial resultado =
+                servicio.consultarHistorial(sinVinculo, "paciente1");
+
+        // Comprobar
+        List<RegistroConsultas.Entrada> entradas = registro.consultas();
+        assertAll(
+                () -> assertEquals(Estado.PROHIBIDO, resultado.estado()),
+                () -> assertEquals("Su usuario no tiene un paciente asociado.",
+                        resultado.mensaje()),
+                () -> assertTrue(resultado.pruebas().isEmpty()),
+                () -> assertEquals(1, entradas.size()),
+                () -> assertEquals(Estado.PROHIBIDO,
+                        entradas.get(0).resultado())
+        );
+    }
+
+    @Test
+    @DisplayName("El vínculo solo limita al paciente: el médico consulta cualquier número")
+    void medicoNoNecesitaVinculo() {
+        // Ejecutar
+        ResultadoHistorial resultado =
+                servicio.consultarHistorial(MEDICO, "paciente1");
+
+        // Comprobar
+        assertEquals(Estado.CORRECTO, resultado.estado());
     }
 
     @ParameterizedTest
@@ -161,7 +247,7 @@ class HistorialServiceImplTest {
             throw new IllegalStateException("Sin conexion");
         };
         HistorialServiceImpl servicioCaido =
-                new HistorialServiceImpl(caido, registro);
+                new HistorialServiceImpl(caido, registro, vinculo);
 
         // Ejecutar
         ResultadoHistorial resultado =

@@ -147,10 +147,10 @@ class HistorialHttpClientTest {
     }
 
     @Test
-    @DisplayName("El cliente normal apunta al puerto 8085")
+    @DisplayName("El cliente normal apunta al puerto 8088")
     void direccionPorDefecto() {
         assertAll(
-                () -> assertEquals("http://localhost:8085/historial",
+                () -> assertEquals("http://localhost:8088/historial",
                         HistorialHttpClient.URL_POR_DEFECTO),
                 () -> assertNotNull(new HistorialHttpClient())
         );
