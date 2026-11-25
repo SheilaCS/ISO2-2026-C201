@@ -530,6 +530,50 @@ Para funcionar, necesita que el servidor de citas esté disponible en el puerto 
 - [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-9).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
+## Iteración 12 — CDU12: Historial de pruebas (RF04)
+
+### Acceso a las pruebas realizadas mediante una interfaz
+
+**Decisión:** el servicio de historial no accede directamente a la lógica de otros módulos. Utiliza la interfaz `IHistorialPruebasProveedor` y su implementación `ProveedorHistorialRealizacion`, que consulta por HTTP, en cada petición, al servidor de realizaciones de la iteración 7 (puerto 8086) y al servidor de citas (puerto 8080). El historial no guarda datos propios.
+
+**Justificación:** reducir las dependencias entre casos de uso y poder probar `HistorialServiceImpl` con un proveedor simulado. Cumple el criterio de integración por interfaz del plan de calidad.
+
+### Servidor y comunicación
+
+**Decisión:** definir el contrato en `IHistorialService`, implementado por `HistorialServiceImpl`, y exponerlo por HTTP con `GestionHistorialHttpServer` en `127.0.0.1`, puerto 8088, mediante `GET /historial?paciente=ID`. El cliente `GestionHistorialGUI` valida con `ValidacionesHistorial` y se comunica mediante `HistorialHttpClient`.
+
+Para funcionar, necesita que estén disponibles los servidores de realizaciones y de citas. Si no lo están, responde 503.
+
+**Justificación:** seguir la misma estructura que los módulos anteriores. Se usa el puerto 8088 porque el 8085 lo utiliza el servidor de informes (CDU8).
+
+### Control de acceso y cuenta de servicio
+
+**Decisión:** el servidor identifica al usuario con HTTP Basic. El médico puede consultar el historial de cualquier paciente, y el paciente solo el del número vinculado a su usuario mediante `IVinculoPaciente`. El resto de roles recibe 403, y sin credenciales válidas, 401. Cada consulta queda anotada en `RegistroConsultas`.
+
+Como el servidor de realizaciones solo admite al rol `MEDICO`, `ProveedorHistorialRealizacion` lo consulta con una cuenta de servicio, configurable con `historial.servicio.usuario` y `historial.servicio.clave` (por defecto, la de la demostración).
+
+**Justificación:** el servidor no se fía del identificador que envía el cliente, sino del usuario autenticado. Reenviar las credenciales del paciente haría que recibiera 403 de realizaciones. Cumple las pruebas de acceso no autorizado que el plan de calidad exige en los casos de uso clínicos.
+
+### Limitaciones conocidas
+
+**Decisión:** aceptar dos limitaciones.
+
+- El tipo de prueba se muestra como «Prueba de la solicitud N», porque el módulo de solicitudes no lo almacena.
+- Los vínculos usuario-paciente están en memoria (`VinculoPacienteEnMemoria`): por defecto solo existe `paciente.demo` → paciente 1, y se amplían con la propiedad `historial.vinculos`. El CDU4 no relaciona hoy usuarios con pacientes.
+
+**Justificación:** no cargar datos que ningún módulo guarda. Al acceder por interfaz, bastará con sustituir esas implementaciones cuando existan los datos reales.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo, con clases de equivalencia, valores límite y conjetura de errores, mediante `@ParameterizedTest` y `assertThrows`. Incluyen pruebas de acceso no autorizado y una prueba de extremo a extremo con servidores falsos de realizaciones y citas. La tabla de casos está en la wiki, página "Iteración 12", apartado "Pruebas".
+
+**Resultado:** `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas. La cobertura del paquete `historial` supera el 90 % de líneas.
+
+### Trazabilidad
+
+- [PR #70 — Integración de CDU12](https://github.com/SheilaCS/ISO2-2026-C201/pull/70).
+- [Documentación de la iteración 12](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-12).
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
 ## Seguridad — Control de acceso por rol en el MVP
