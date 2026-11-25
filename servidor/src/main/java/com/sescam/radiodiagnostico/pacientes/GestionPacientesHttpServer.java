@@ -284,7 +284,7 @@ public class GestionPacientesHttpServer {
     }
 
     public static void main(String[] args) throws IOException {
-        int puerto = Integer.getInteger("pacientes.puerto", 8084);
+        int puerto = Integer.getInteger("pacientes.puerto", 8087);
         HttpServer servidor = crearServidor(puerto);
         servidor.start();
         System.out.println(

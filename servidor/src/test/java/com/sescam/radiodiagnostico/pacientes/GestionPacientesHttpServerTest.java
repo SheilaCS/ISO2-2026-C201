@@ -1,8 +1,5 @@
 package com.sescam.radiodiagnostico.pacientes;
 
-import com.sescam.radiodiagnostico.autenticacion.AutenticacionServiceImpl;
-import com.sun.net.httpserver.HttpServer;
-
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.http.HttpClient;
@@ -17,6 +14,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +26,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.sescam.radiodiagnostico.autenticacion.AutenticacionServiceImpl;
+import com.sun.net.httpserver.HttpServer;
 
 class GestionPacientesHttpServerTest {
 
@@ -374,6 +377,49 @@ class GestionPacientesHttpServerTest {
                 )
         );
     }
+
+        @ParameterizedTest(name = "{0} no puede hacer {1}")
+    @MethodSource("rolesNoAutorizados")
+    @DisplayName("HTTP impide a otros roles dar de alta, modificar o dar de baja y no cambia los datos")
+    void otrosRolesNoModificanPacientes(String usuario, String metodo) throws Exception {
+        // Preparar: el administrativo da de alta un paciente
+        String id = leerRespuesta(
+                enviar("POST", "/pacientes", DATOS_VALIDOS)).get("id");
+
+        String ruta = metodo.equals("POST") ? "/pacientes" : "/pacientes/" + id;
+        String cuerpo = switch (metodo) {
+            case "POST" -> "cip=PAC002&nombre=Eva&apellidos=Sanz&fechaNacimiento=1990-01-01";
+            case "PUT" -> "nombre=Otro&apellidos=Cambio&fechaNacimiento=1990-01-01";
+            default -> null;
+        };
+
+        // Ejecutar: otro rol intenta la operación
+        HttpResponse<String> respuesta = enviar(
+                metodo,
+                ruta,
+                cuerpo,
+                basic(usuario + ":demo"),
+                cuerpo == null ? null : TIPO_FORMULARIO
+        );
+
+        // Comprobar: se rechaza y los datos no cambian
+        HttpResponse<String> paciente = enviar("GET", "/pacientes?cip=PAC001", null);
+        HttpResponse<String> nuevo = enviar("GET", "/pacientes?cip=PAC002", null);
+
+        assertAll(
+                () -> assertEquals(403, respuesta.statusCode()),
+                () -> assertEquals("Ana", leerRespuesta(paciente).get("nombre")),
+                () -> assertEquals("true", leerRespuesta(paciente).get("activo")),
+                () -> assertEquals(404, nuevo.statusCode())
+        );
+    }
+
+    static Stream<Arguments> rolesNoAutorizados() {
+        return Stream.of("medico.demo", "paciente.demo", "admin.demo")
+                .flatMap(usuario -> Stream.of("POST", "PUT", "DELETE")
+                        .map(metodo -> Arguments.of(usuario, metodo)));
+    }
+
 
     private HttpResponse<String> enviar(
             String metodo,
