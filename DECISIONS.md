@@ -706,3 +706,100 @@ En Mis citas, el servidor confía en el ID de paciente que recibe en la petició
 
 - [Evaluación de calidad](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Evaluaci%C3%B3n-de-calidad) 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+
+## Iteración 18 — CDU18: Comunicar incidencias y responder encuestas de satisfacción (RF05)
+
+### Acceso a los datos mediante una interfaz
+
+**Decisión:** el servicio de encuestas no accede directamente a la lógica de otros módulos. Utiliza la interfaz `IEncuestasProveedor` y su implementación `ProveedorEncuestasHttp`, que consulta mediante HTTP al servidor de Mis citas de la iteración 9 (puerto 8082) y al servidor de realización de pruebas de la iteración 7 (puerto 8086).
+
+**Justificación:** reducir las dependencias entre casos de uso y poder probar `GestionEncuestasServiceImpl` con un proveedor simulado. Cumple el criterio de integración por interfaz del plan de calidad.
+
+### Servidor y comunicación
+
+**Decisión:** definir el contrato en `IGestionEncuestasService`, implementado por `GestionEncuestasServiceImpl`, y exponerlo por HTTP con `GestionEncuestasHttpServer` en el puerto 8090. El cliente `GestionEncuestasGUI` valida con `ValidacionesEncuestas` y se comunica mediante `EncuestasHttpClient`.
+
+Para funcionar, necesita que estén disponibles los servidores de Mis citas y realización de pruebas, y de forma indirecta el servidor de citas (puerto 8080).
+
+**Justificación:** seguir la misma estructura que los módulos anteriores y evitar conflictos entre los puertos utilizados por los distintos servidores.
+
+### Servicio y almacenamiento
+
+**Decisión:** representar las incidencias mediante `IncidenciaPaciente` y las encuestas de satisfacción mediante `EncuestaSatisfaccion`. Los registros se almacenan en memoria en el servidor.
+
+**Justificación:** mantener la estructura del proyecto sin incorporar una base de datos en esta fase y separar la lógica de negocio de la comunicación HTTP.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas.
+
+- El ID de cita debe ser un entero mayor que 0.
+- La cita debe pertenecer al paciente autenticado.
+- La descripción de la incidencia es obligatoria y no puede superar los 500 caracteres.
+- Solo se permite responder a una encuesta cuando la prueba se ha realizado.
+- La puntuación debe estar comprendida entre 1 y 5.
+- El comentario de la encuesta es opcional y no puede superar los 500 caracteres.
+- Solo se permite una encuesta de satisfacción por cita.
+
+**Justificación:** evitar registros incoherentes, impedir encuestas duplicadas y garantizar que el paciente únicamente pueda realizar operaciones sobre sus propias citas.
+
+### Control de acceso
+
+**Decisión:** reutilizar el servicio de autenticación de demostración del proyecto y restringir las operaciones al rol `PACIENTE`. El servidor comprueba las credenciales y la pertenencia de la cita al paciente autenticado.
+
+**Justificación:** evitar accesos no autorizados y garantizar la confidencialidad de los datos asociados a los pacientes.
+
+### Validación en cliente y servidor
+
+**Decisión:** comprobar los datos en el cliente con `ValidacionesEncuestas` antes de enviar la petición y repetir las validaciones correspondientes en el servidor.
+
+**Justificación:** mostrar respuestas rápidas al usuario sin depender únicamente de la validación del cliente.
+
+### Interfaz del cliente
+
+**Decisión:** construir `GestionEncuestasGUI` mediante Java Swing, con los campos `Usuario`, `Clave`, `ID de cita`, `Descripción de incidencia`, `Puntuación` y `Comentario opcional`, y dos botones: `Comunicar incidencia` y `Enviar encuesta`.
+
+Las operaciones se ejecutan mediante `SwingWorker` para evitar bloquear la interfaz durante la comunicación con el servidor. El campo de contraseña se limpia después de cada operación.
+
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing, separar la lógica de presentación de la comunicación HTTP y proteger las credenciales del usuario.
+
+### Integración
+
+**Decisión:** desarrollar el cliente, el servidor y sus pruebas en la rama `feature/cdu18-encuestas`, sin modificar los módulos de otros casos de uso.
+
+Antes de la integración se comprobó manualmente el funcionamiento contra los servidores reales de citas, Mis citas y realización de pruebas, registrando correctamente una incidencia y una encuesta de satisfacción.
+
+**Justificación:** garantizar la compatibilidad con las funcionalidades desarrolladas en las iteraciones anteriores y comprobar el funcionamiento completo del CDU18.
+
+### Limitaciones conocidas
+
+**Decisión:** mantener el almacenamiento de incidencias y encuestas en memoria, por lo que los registros se pierden al reiniciar el servidor.
+
+**Justificación:** mantener el alcance del proyecto en esta fase, sin incorporar mecanismos adicionales de persistencia.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo, en el mismo paquete que la clase probada.
+
+- El servicio se prueba mediante proveedores simulados, verificando las reglas de negocio.
+- El servidor HTTP se prueba arrancándolo en un puerto libre y realizando peticiones reales.
+- El proveedor HTTP se prueba mediante servidores simulados de los módulos dependientes.
+- El cliente HTTP y la interfaz gráfica se prueban mediante componentes simulados.
+- Se verifican tanto las operaciones correctas como los errores de validación, autenticación y comunicación.
+- Los casos de prueba se diseñan mediante clases de equivalencia, valores límite y conjetura de errores.
+
+**Resultado:** se ejecutaron correctamente **88 pruebas automatizadas**:
+
+- **Servidor:** 48 pruebas.
+- **Cliente:** 40 pruebas.
+
+La ejecución de `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas.
+
+### Trazabilidad
+
+- [Documentación de la iteración 18](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-18).
+- [Rama de desarrollo de CDU18](https://github.com/SheilaCS/ISO2-2026-C201/tree/feature/cdu18-encuestas).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
