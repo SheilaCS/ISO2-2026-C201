@@ -94,7 +94,7 @@ Se utilizan las pruebas existentes de `AutenticacionServiceImplTest` (clave inco
 - [Issue #9 — Entregar Iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/issues/9).
 - [PR #35 — Integración de CU01](https://github.com/SheilaCS/ISO2-2026-C201/pull/35).
 - [PR #37 — Revisión de tests y eliminación del simulador](https://github.com/SheilaCS/ISO2-2026-C201/pull/37).
-- [Documentación de la iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-1).
+- [Documentación de la iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-01).
 - [PR #40 — Ampliación de pruebas con clases de equivalencia y valores límite](https://github.com/SheilaCS/ISO2-2026-C201/pull/40).
 - [PR #50 — Pruebas de la pantalla de inicio de sesión](https://github.com/SheilaCS/ISO2-2026-C201/pull/50).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
@@ -162,7 +162,7 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 - [Issue #10 — Entregar Iteración 2 (RF06)](https://github.com/SheilaCS/ISO2-2026-C201/issues/10).
 - [PR #57 — Integración de CDU2](https://github.com/SheilaCS/ISO2-2026-C201/pull/57).
-- [Documentación de la iteración 2](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-2).
+- [Documentación de la iteración 2](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-02).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
@@ -213,7 +213,7 @@ La aprobación y la integración de cada cambio se acreditan mediante el histori
 ### Trazabilidad
 
 - [PR #45 — Integración de CDU3](https://github.com/SheilaCS/ISO2-2026-C201/pull/45).
-- [Documentación de la iteración 3](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-3).
+- [Documentación de la iteración 3](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-03).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -297,7 +297,7 @@ Mateo implementó el servidor y sus pruebas, y Tomás el cliente. Juan Manuel y 
 - [Issue #13 — Iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/issues/13).
 - [PR #51 — Servidor y pruebas](https://github.com/SheilaCS/ISO2-2026-C201/pull/51).
 - [PR #53 — Cliente y correcciones](https://github.com/SheilaCS/ISO2-2026-C201/pull/53).
-- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-4).
+- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-04).
 - [PR #59 — Decisiones de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/pull/59).
 - [PR #62 — Pruebas de acceso no autorizado](https://github.com/SheilaCS/ISO2-2026-C201/pull/62).
 
@@ -374,7 +374,7 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 - [Issue #14 — Entregar Iteración 5 (RF17)](https://github.com/SheilaCS/ISO2-2026-C201/issues/14).
 - [PR #60 — Integración de CDU5](https://github.com/SheilaCS/ISO2-2026-C201/pull/60).
-- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-5).
+- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-05).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
@@ -417,7 +417,7 @@ Los horarios se guardan en memoria.
 ### Trazabilidad
 
 - [PR #46 — Integración de CDU6](https://github.com/SheilaCS/ISO2-2026-C201/pull/46).
-- [Documentación de la iteración 6](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-6).
+- [Documentación de la iteración 6](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-06).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -483,9 +483,9 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 ### Trazabilidad
 
-- [Issue #XX — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/XX).
-- [PR #XX — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/XX).
-- [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-8).
+- [Issue #17 — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/17).
+- [PR #61 — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/61).
+- [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-08).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
@@ -527,8 +527,77 @@ Para funcionar, necesita que el servidor de citas esté disponible en el puerto 
 ### Trazabilidad
 
 - [PR #52 — Integración de CDU9](https://github.com/SheilaCS/ISO2-2026-C201/pull/52).
-- [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-9).
+- [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-09).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+## Iteración 11 — CDU11: Gestionar calidad y seguridad (RF18)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `ISeguridadService`, implementado por `SeguridadServiceImpl`. El servicio gestiona las reglas de control de acceso (RBAC) y almacena los registros de auditoría en memoria mediante una lista de textos.
+
+**Justificación:** el objetivo del CDU11 es fijar la lógica de seguridad y la trazabilidad de las acciones. Al igual que en el resto del proyecto, no se utiliza una base de datos real en esta fase, sino estructuras en memoria que posteriormente podrán ser sustituidas por repositorios.
+
+### Reglas de negocio y seguridad
+
+**Decisión:** aplicar las siguientes reglas de control de acceso y calidad.
+
+- **Seguridad (Control de acceso):** La acción `GESTIONAR_USUARIOS` está reservada exclusivamente al rol `ADMINISTRADOR`. El rol debe compararse tras aplicar `trim()` y `toUpperCase()`.
+- **Seguridad (Privacidad):** Para la acción `VER_HISTORIAL`, un usuario con rol `PACIENTE` solo tendrá permitido el acceso a su propio historial (simulado en esta fase).
+- **Calidad (Trazabilidad):** Todas las peticiones, tanto si son concedidas como denegadas, deben registrarse obligatoriamente en un log de auditoría mediante `registrarAuditoria(...)`.
+- **Formato del log:** Cada registro de auditoría debe incluir la marca temporal exacta (`LocalDateTime.now()`), el usuario, la acción realizada y el resultado (permitido/denegado).
+- **Consulta de logs:** Solo el rol `ADMINISTRADOR` tiene permiso para consultar los logs del sistema.
+
+**Justificación:** garantizar la integridad y confidencialidad de los datos clínicos, cumpliendo con los requisitos de seguridad y calidad exigidos en el proyecto.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `SeguridadHttpClient` y el servidor `SeguridadHttpHandler`, que escucha en `127.0.0.1`, puerto 8087 (para evitar conflictos con el 8084 de parámetros y el 8085 de informes). La verificación se expone en `/seguridad/verificar` (POST) y la consulta de logs en `/seguridad/logs` (GET), con formularios codificados en UTF-8.
+
+**Justificación:** mantener la misma arquitectura de comunicación que el resto de módulos del sistema.
+
+### Validación en cliente y servidor
+
+**Decisión:** el cliente comprueba que los campos no estén vacíos antes de enviar la petición. Sin embargo, el servidor (`SeguridadServiceImpl`) repite y centraliza toda la lógica de validación de roles y permisos.
+
+**Justificación:** aunque el cliente valide para dar una respuesta rápida, el control de seguridad real y la auditoría deben residir siempre en el servidor, ya que un cliente manipulado podría intentar saltarse las restricciones.
+
+### Interfaz del cliente
+
+**Decisión:** construir `SeguridadGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(3, 2)` con los campos `Usuario`, `Rol` y `Acción`, y dos botones `Verificar Permiso` y `Ver Logs`. El resultado se muestra en un `JTextArea` no editable. `SeguridadGUI(SeguridadHttpClient)` permite inyectar un cliente simulado para las pruebas.
+
+**Justificación:** mantener la misma pauta visual y de inyección de dependencias que el resto de pantallas Swing del proyecto.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la trazabilidad entre código de producción y código de prueba.
+
+- El servicio se prueba verificando los distintos niveles de acceso según el rol del usuario y las acciones solicitadas.
+- El servicio también se prueba validando el registro y recuperación de auditorías de seguridad.
+- El servidor HTTP se prueba arrancándolo sobre un puerto libre y realizando peticiones HTTP reales mediante GET y POST.
+- El cliente HTTP se prueba mediante un servidor simulado que permite validar las peticiones enviadas sin depender de servicios externos.
+- La interfaz gráfica se prueba utilizando clientes simulados para aislar la lógica de presentación y comprobar la gestión de resultados y errores.
+- Se verifican tanto los escenarios de acceso autorizado como los intentos de acceso denegado y los errores de comunicación.
+- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado "Testing".
+
+**Resultado:**
+
+Se ejecutaron correctamente **36 pruebas automatizadas**:
+
+- **Servidor:** 22 pruebas.
+- **Cliente:** 14 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+
+### Trazabilidad
+
+- [Issue #72 — Entregar Iteración 11 (RF18)](https://github.com/SheilaCS/ISO2-2026-C201/issues/72). 
+- [PR #20 — Integración de CDU11](https://github.com/SheilaCS/ISO2-2026-C201/pull/20). 
+- [Documentación de la iteración 11](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-11).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
 
 ## Iteración 12 — CDU12: Historial de pruebas (RF04)
 
@@ -572,7 +641,48 @@ Como el servidor de realizaciones solo admite al rol `MEDICO`, `ProveedorHistori
 ### Trazabilidad
 
 - [PR #70 — Integración de CDU12](https://github.com/SheilaCS/ISO2-2026-C201/pull/70).
-- [Documentación de la iteración 12](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-12).
+- [Documentación de la iteración 12](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-12).
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+## Iteración 15 — CDU15: Listas de espera y huecos (RF15)
+
+### Acceso a los datos mediante interfaces
+
+**Decisión:** el servicio de lista de espera no accede directamente a la lógica de otros módulos. Utiliza tres interfaces: `ISolicitudesPendientesProveedor` (solicitudes en espera), `IHuecosProveedor` (huecos libres) e `IAsignadorCitas` (asignación de la cita). Esta última tiene una implementación real, `AsignadorCitasHttp`, que llama por HTTP a `POST /citas/asignar` del servidor de citas (puerto 8080).
+
+**Justificación:** reducir las dependencias entre casos de uso y poder probar `ListaEsperaServiceImpl`. Cumple el criterio de integración por interfaz del plan de calidad.
+
+### Servidor y comunicación
+
+**Decisión:** definir el contrato en `IListaEsperaService`, implementado por `ListaEsperaServiceImpl`, y exponerlo por HTTP con `GestionListaEsperaHttpServer` en `127.0.0.1`, puerto 8089, configurable con la propiedad `listaespera.puerto`. El cliente `GestionListaEsperaGUI` valida con `ValidacionesListaEspera` y se comunica mediante `ListaEsperaHttpClient`.
+
+**Justificación:** seguir la misma estructura que los módulos anteriores. Se usa el puerto 8089 porque el 8086 lo utiliza el servidor de realizaciones (CDU7) y el 8088 el de historial (CDU12).
+
+### Control de acceso
+
+**Decisión:** todas las operaciones exigen autenticación Basic de un usuario `ADMINISTRATIVO`. Responde 401 sin credenciales válidas y 403 con otro rol. Las operaciones rechazadas por las reglas de negocio responden 409 con un mensaje.
+
+**Justificación:** la lista de espera maneja datos clínicos de pacientes y solo debe gestionarla personal administrativo.
+
+### Limitaciones conocidas
+
+**Decisión:** aceptar que la lista de espera y los huecos libres se obtengan de un proveedor simulado en memoria (`ProveedorListaEsperaEnMemoria`), porque los módulos de origen no exponen todavía los datos necesarios:
+
+- Solicitudes pendientes: el módulo de solicitudes (CDU2) solo valida y no almacena las solicitudes.
+- Huecos libres: el módulo de agendas (CDU6) solo permite consultar la agenda de un médico concreto, y el módulo de citas (CDU3) no ofrece un listado general ni guarda qué médico atiende cada cita.
+
+**Justificación:** mantener el alcance del MVP sin modificar módulos de otros casos de uso (RNF-MAN-07). Al acceder por interfaz, bastará con sustituir el proveedor cuando esos módulos expongan los datos. La asignación de la cita sí es real.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo, con clases de equivalencia, valores límite y conjetura de errores, mediante `@ParameterizedTest` y `assertThrows`. Incluyen pruebas de acceso no autorizado y pruebas del asignador contra un servidor de citas falso. La tabla de casos está en la wiki, página "Iteración 15", apartado "Pruebas".
+
+**Resultado:** `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas. 
+
+### Trazabilidad
+
+- [PR #74 — Integración de CDU15](https://github.com/SheilaCS/ISO2-2026-C201/pull/74).
+- [Documentación de la iteración 15](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-15).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -598,120 +708,98 @@ En Mis citas, el servidor confía en el ID de paciente que recibe en la petició
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
+
 ## Iteración 18 — CDU18: Comunicar incidencias y responder encuestas de satisfacción (RF05)
 
-### Acceso a las citas y pruebas realizadas mediante una interfaz
+### Acceso a los datos mediante una interfaz
 
-**Decisión:** el servicio de encuestas no accede directamente a la lógica de otros módulos. Utiliza la interfaz `IEncuestasProveedor` y su implementación `ProveedorEncuestasHttp`, que se comunica mediante HTTP con el servidor de Mis citas de la iteración 9 (puerto 8082) y el servidor de realización de pruebas de la iteración 7 (puerto 8086).
+**Decisión:** el servicio de encuestas no accede directamente a la lógica de otros módulos. Utiliza la interfaz `IEncuestasProveedor` y su implementación `ProveedorEncuestasHttp`, que consulta mediante HTTP al servidor de Mis citas de la iteración 9 (puerto 8082) y al servidor de realización de pruebas de la iteración 7 (puerto 8086).
 
-**Justificación:** reducir las dependencias entre casos de uso y permitir probar `GestionEncuestasServiceImpl` mediante un proveedor simulado. Cumple el criterio de integración por interfaz del plan de calidad.
+**Justificación:** reducir las dependencias entre casos de uso y poder probar `GestionEncuestasServiceImpl` con un proveedor simulado. Cumple el criterio de integración por interfaz del plan de calidad.
+
+### Servidor y comunicación
+
+**Decisión:** definir el contrato en `IGestionEncuestasService`, implementado por `GestionEncuestasServiceImpl`, y exponerlo por HTTP con `GestionEncuestasHttpServer` en el puerto 8090. El cliente `GestionEncuestasGUI` valida con `ValidacionesEncuestas` y se comunica mediante `EncuestasHttpClient`.
+
+Para funcionar, necesita que estén disponibles los servidores de Mis citas y realización de pruebas, y de forma indirecta el servidor de citas (puerto 8080).
+
+**Justificación:** seguir la misma estructura que los módulos anteriores y evitar conflictos entre los puertos utilizados por los distintos servidores.
 
 ### Servicio y almacenamiento
 
-**Decisión:** definir el contrato en `IGestionEncuestasService`, implementado por `GestionEncuestasServiceImpl`. Las incidencias y encuestas de satisfacción se representan mediante `IncidenciaPaciente` y `EncuestaSatisfaccion`, respectivamente, y se almacenan en memoria.
+**Decisión:** representar las incidencias mediante `IncidenciaPaciente` y las encuestas de satisfacción mediante `EncuestaSatisfaccion`. Los registros se almacenan en memoria en el servidor.
 
-**Justificación:** mantener la arquitectura del proyecto, separar responsabilidades y facilitar las pruebas sin incorporar una base de datos en esta fase.
-
-### Comunicación entre cliente y servidor
-
-**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `EncuestasHttpClient` y el servidor `GestionEncuestasHttpServer`, que escucha en el puerto 8090.
-
-Para funcionar correctamente, necesita que estén disponibles los servidores de Mis citas y realización de pruebas. De forma indirecta, también depende del servidor de citas de la iteración 3 (puerto 8080).
-
-**Justificación:** mantener la arquitectura cliente-servidor definida para el proyecto y reutilizar las funcionalidades implementadas en las iteraciones anteriores.
+**Justificación:** mantener la estructura del proyecto sin incorporar una base de datos en esta fase y separar la lógica de negocio de la comunicación HTTP.
 
 ### Reglas de negocio
 
 **Decisión:** aplicar las siguientes reglas.
 
-- El identificador de cita debe ser un entero mayor que 0.
+- El ID de cita debe ser un entero mayor que 0.
 - La cita debe pertenecer al paciente autenticado.
-- La descripción de la incidencia es obligatoria.
-- La descripción de la incidencia no puede superar los 500 caracteres.
-- La encuesta únicamente puede registrarse cuando la prueba se ha realizado.
-- La puntuación de la encuesta debe estar comprendida entre 1 y 5.
+- La descripción de la incidencia es obligatoria y no puede superar los 500 caracteres.
+- Solo se permite responder a una encuesta cuando la prueba se ha realizado.
+- La puntuación debe estar comprendida entre 1 y 5.
 - El comentario de la encuesta es opcional y no puede superar los 500 caracteres.
-- Solo se permite registrar una encuesta de satisfacción por cita.
+- Solo se permite una encuesta de satisfacción por cita.
 
-**Justificación:** garantizar la coherencia de los datos, evitar encuestas duplicadas y asegurar que cada paciente únicamente pueda realizar operaciones sobre sus propias citas.
+**Justificación:** evitar registros incoherentes, impedir encuestas duplicadas y garantizar que el paciente únicamente pueda realizar operaciones sobre sus propias citas.
 
-### Control de acceso y seguridad
+### Control de acceso
 
-**Decisión:** reutilizar el servicio de autenticación de demostración del proyecto y restringir las operaciones de comunicación de incidencias y envío de encuestas al rol `PACIENTE`.
+**Decisión:** reutilizar el servicio de autenticación de demostración del proyecto y restringir las operaciones al rol `PACIENTE`. El servidor comprueba las credenciales y la pertenencia de la cita al paciente autenticado.
 
-El servidor comprueba las credenciales del usuario y verifica que la cita pertenece al paciente autenticado.
-
-**Justificación:** evitar accesos no autorizados y proteger la información asociada a las citas de otros pacientes.
+**Justificación:** evitar accesos no autorizados y garantizar la confidencialidad de los datos asociados a los pacientes.
 
 ### Validación en cliente y servidor
 
-**Decisión:** comprobar los datos en el cliente mediante `ValidacionesEncuestas` antes de enviar la petición y repetir las comprobaciones correspondientes en `GestionEncuestasServiceImpl`.
+**Decisión:** comprobar los datos en el cliente con `ValidacionesEncuestas` antes de enviar la petición y repetir las validaciones correspondientes en el servidor.
 
-**Justificación:** proporcionar respuestas inmediatas al usuario y evitar que un cliente manipulado pueda omitir las validaciones de las reglas de negocio.
+**Justificación:** mostrar respuestas rápidas al usuario sin depender únicamente de la validación del cliente.
 
 ### Interfaz del cliente
 
-**Decisión:** implementar `GestionEncuestasGUI` mediante Java Swing, incluyendo los campos de usuario, contraseña, identificador de cita, descripción de incidencia, puntuación y comentario opcional.
+**Decisión:** construir `GestionEncuestasGUI` mediante Java Swing, con los campos `Usuario`, `Clave`, `ID de cita`, `Descripción de incidencia`, `Puntuación` y `Comentario opcional`, y dos botones: `Comunicar incidencia` y `Enviar encuesta`.
 
-La interfaz dispone de dos botones: `Comunicar incidencia` y `Enviar encuesta`. Las peticiones al servidor se realizan mediante `SwingWorker` para evitar bloquear la interfaz gráfica durante la comunicación.
+Las operaciones se ejecutan mediante `SwingWorker` para evitar bloquear la interfaz durante la comunicación con el servidor. El campo de contraseña se limpia después de cada operación.
 
-El campo de contraseña se limpia después de cada operación.
-
-**Justificación:** mantener la coherencia visual con el resto de interfaces del proyecto, separar la presentación de la comunicación HTTP y mejorar la seguridad de las credenciales.
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing, separar la lógica de presentación de la comunicación HTTP y proteger las credenciales del usuario.
 
 ### Integración
 
-**Decisión:** desarrollar el cliente, el servidor y sus pruebas en la rama `feature/cdu18-encuestas`, manteniendo separados los módulos mediante sus respectivos paquetes `encuestas`.
+**Decisión:** desarrollar el cliente, el servidor y sus pruebas en la rama `feature/cdu18-encuestas`, sin modificar los módulos de otros casos de uso.
 
-Se ha comprobado manualmente el funcionamiento integrado con los servidores de citas, Mis citas y realización de pruebas.
+Antes de la integración se comprobó manualmente el funcionamiento contra los servidores reales de citas, Mis citas y realización de pruebas, registrando correctamente una incidencia y una encuesta de satisfacción.
 
-**Justificación:** verificar el funcionamiento completo del caso de uso y garantizar la compatibilidad con las funcionalidades desarrolladas en iteraciones anteriores.
+**Justificación:** garantizar la compatibilidad con las funcionalidades desarrolladas en las iteraciones anteriores y comprobar el funcionamiento completo del CDU18.
+
+### Limitaciones conocidas
+
+**Decisión:** mantener el almacenamiento de incidencias y encuestas en memoria, por lo que los registros se pierden al reiniciar el servidor.
+
+**Justificación:** mantener el alcance del proyecto en esta fase, sin incorporar mecanismos adicionales de persistencia.
 
 ### Organización de las pruebas
 
-**Decisión:** mantener las pruebas en `src/test/java` de cada módulo, dentro del mismo paquete que la clase probada.
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo, en el mismo paquete que la clase probada.
 
 - El servicio se prueba mediante proveedores simulados, verificando las reglas de negocio.
-- El servidor HTTP se prueba mediante peticiones reales a un servidor embebido.
-- El proveedor HTTP se prueba simulando los servicios dependientes.
-- El cliente HTTP se prueba mediante servidores simulados.
-- La interfaz gráfica se prueba verificando sus validaciones y comportamiento.
+- El servidor HTTP se prueba arrancándolo en un puerto libre y realizando peticiones reales.
+- El proveedor HTTP se prueba mediante servidores simulados de los módulos dependientes.
+- El cliente HTTP y la interfaz gráfica se prueban mediante componentes simulados.
+- Se verifican tanto las operaciones correctas como los errores de validación, autenticación y comunicación.
 - Los casos de prueba se diseñan mediante clases de equivalencia, valores límite y conjetura de errores.
-- Se utiliza JUnit para la ejecución de pruebas automatizadas y JaCoCo para medir la cobertura del código.
 
-**Resultado:** se ejecutaron correctamente 88 pruebas automatizadas:
+**Resultado:** se ejecutaron correctamente **88 pruebas automatizadas**:
 
 - **Servidor:** 48 pruebas.
 - **Cliente:** 40 pruebas.
 
-La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
-
-### Comprobación manual
-
-**Decisión:** realizar pruebas manuales utilizando las interfaces gráficas y los servidores reales de las iteraciones implicadas.
-
-Se han comprobado los siguientes escenarios:
-
-- Asignación de una cita al paciente.
-- Registro de la realización de una prueba.
-- Comunicación correcta de una incidencia.
-- Envío correcto de una encuesta de satisfacción.
-- Rechazo de credenciales incorrectas.
-- Rechazo de citas que no pertenecen al paciente.
-- Rechazo de encuestas correspondientes a pruebas no realizadas.
-
-**Resultado:** las dos funcionalidades principales del CDU18 se ejecutan correctamente mediante la interfaz gráfica.
-
-### Limitaciones conocidas
-
-**Decisión:** mantener las incidencias y encuestas en memoria durante esta fase del proyecto.
-
-**Justificación:** el proyecto todavía no dispone de persistencia en base de datos. Los registros se pierden al reiniciar el servidor.
+La ejecución de `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas.
 
 ### Trazabilidad
 
-- Rama `feature/cdu18-encuestas`.
-- Pull request de integración de CDU18 (pendiente de incorporar su enlace).
-- Documentación de la iteración 18 en la wiki.
+- [Documentación de la iteración 18](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-18).
+- [Rama de desarrollo de CDU18](https://github.com/SheilaCS/ISO2-2026-C201/tree/feature/cdu18-encuestas).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
