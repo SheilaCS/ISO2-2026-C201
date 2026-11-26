@@ -571,17 +571,22 @@ La aprobación y la integración de cada cambio se acreditan mediante el histori
 
 ### Organización de las pruebas
 
-**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada.
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la trazabilidad entre código de producción y código de prueba.
 
-- El servicio se prueba verificando las reglas de acceso por rol (RBAC) y el correcto registro de las acciones en el log de auditoría.
-- El servidor HTTP se prueba mediante peticiones reales enviadas a un servidor embebido arrancado en un puerto libre.
-- El cliente HTTP se prueba utilizando servidores simulados para validar la construcción y envío de peticiones.
-- La interfaz gráfica se prueba mediante clientes simulados para verificar validaciones y resultados mostrados al usuario.
-- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores (roles válidos, roles inventados, nulos, etc.). La tabla de casos se encuentra en la wiki, apartado “Pruebas”.
+- El servicio se prueba verificando los distintos niveles de acceso según el rol del usuario y las acciones solicitadas.
+- El servicio también se prueba validando el registro y recuperación de auditorías de seguridad.
+- El servidor HTTP se prueba arrancándolo sobre un puerto libre y realizando peticiones HTTP reales mediante GET y POST.
+- El cliente HTTP se prueba mediante un servidor simulado que permite validar las peticiones enviadas sin depender de servicios externos.
+- La interfaz gráfica se prueba utilizando clientes simulados para aislar la lógica de presentación y comprobar la gestión de resultados y errores.
+- Se verifican tanto los escenarios de acceso autorizado como los intentos de acceso denegado y los errores de comunicación.
+- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado "Testing".
 
 **Resultado:**
 
-Se ejecutaron correctamente las pruebas automatizadas correspondientes al módulo de seguridad.
+Se ejecutaron correctamente **36 pruebas automatizadas**:
+
+- **Servidor:** 22 pruebas.
+- **Cliente:** 14 pruebas.
 
 La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
 
