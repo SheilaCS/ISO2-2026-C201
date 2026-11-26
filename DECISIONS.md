@@ -644,6 +644,47 @@ Como el servidor de realizaciones solo admite al rol `MEDICO`, `ProveedorHistori
 - [Documentación de la iteración 12](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-12).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
+## Iteración 15 — CDU15: Listas de espera y huecos (RF15)
+
+### Acceso a los datos mediante interfaces
+
+**Decisión:** el servicio de lista de espera no accede directamente a la lógica de otros módulos. Utiliza tres interfaces: `ISolicitudesPendientesProveedor` (solicitudes en espera), `IHuecosProveedor` (huecos libres) e `IAsignadorCitas` (asignación de la cita). Esta última tiene una implementación real, `AsignadorCitasHttp`, que llama por HTTP a `POST /citas/asignar` del servidor de citas (puerto 8080).
+
+**Justificación:** reducir las dependencias entre casos de uso y poder probar `ListaEsperaServiceImpl`. Cumple el criterio de integración por interfaz del plan de calidad.
+
+### Servidor y comunicación
+
+**Decisión:** definir el contrato en `IListaEsperaService`, implementado por `ListaEsperaServiceImpl`, y exponerlo por HTTP con `GestionListaEsperaHttpServer` en `127.0.0.1`, puerto 8089, configurable con la propiedad `listaespera.puerto`. El cliente `GestionListaEsperaGUI` valida con `ValidacionesListaEspera` y se comunica mediante `ListaEsperaHttpClient`.
+
+**Justificación:** seguir la misma estructura que los módulos anteriores. Se usa el puerto 8089 porque el 8086 lo utiliza el servidor de realizaciones (CDU7) y el 8088 el de historial (CDU12).
+
+### Control de acceso
+
+**Decisión:** todas las operaciones exigen autenticación Basic de un usuario `ADMINISTRATIVO`. Responde 401 sin credenciales válidas y 403 con otro rol. Las operaciones rechazadas por las reglas de negocio responden 409 con un mensaje.
+
+**Justificación:** la lista de espera maneja datos clínicos de pacientes y solo debe gestionarla personal administrativo.
+
+### Limitaciones conocidas
+
+**Decisión:** aceptar que la lista de espera y los huecos libres se obtengan de un proveedor simulado en memoria (`ProveedorListaEsperaEnMemoria`), porque los módulos de origen no exponen todavía los datos necesarios:
+
+- Solicitudes pendientes: el módulo de solicitudes (CDU2) solo valida y no almacena las solicitudes.
+- Huecos libres: el módulo de agendas (CDU6) solo permite consultar la agenda de un médico concreto, y el módulo de citas (CDU3) no ofrece un listado general ni guarda qué médico atiende cada cita.
+
+**Justificación:** mantener el alcance del MVP sin modificar módulos de otros casos de uso (RNF-MAN-07). Al acceder por interfaz, bastará con sustituir el proveedor cuando esos módulos expongan los datos. La asignación de la cita sí es real.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo, con clases de equivalencia, valores límite y conjetura de errores, mediante `@ParameterizedTest` y `assertThrows`. Incluyen pruebas de acceso no autorizado y pruebas del asignador contra un servidor de citas falso. La tabla de casos está en la wiki, página "Iteración 15", apartado "Pruebas".
+
+**Resultado:** `mvn clean verify` termina correctamente, sin fallos, errores ni pruebas omitidas. 
+
+### Trazabilidad
+
+- [PR #74 — Integración de CDU15](https://github.com/SheilaCS/ISO2-2026-C201/pull/74).
+- [Documentación de la iteración 15](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-15).
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
 
 ## Seguridad — Control de acceso por rol en el MVP
 
