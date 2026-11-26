@@ -85,7 +85,7 @@ public class ParametroHttpHandlerTest {
                 leerRespuesta(conexion);
 
         assertEquals(
-                "Parámetro 'MAX_PACIENTES' guardado con valor '100'",
+                "Parámetro 'MAX_PACIENTES' guardado correctamente",
                 respuesta);
     }
 
@@ -93,6 +93,28 @@ public class ParametroHttpHandlerTest {
     @DisplayName("Consultar parametro")
     public void testConsultarParametro()
             throws Exception {
+
+        // Guardar primero un valor real
+
+        URL guardar = new URL(
+                "http://127.0.0.1:"
+                + puerto
+                + "/parametros/guardar");
+
+        HttpURLConnection conexionGuardar =
+                (HttpURLConnection)
+                        guardar.openConnection();
+
+        conexionGuardar.setRequestMethod("POST");
+        conexionGuardar.setDoOutput(true);
+
+        conexionGuardar.getOutputStream().write(
+                "clave=MAX_PACIENTES&valor=100"
+                        .getBytes(StandardCharsets.UTF_8));
+
+        leerRespuesta(conexionGuardar);
+
+        // Consultarlo después
 
         URL url = new URL(
                 "http://127.0.0.1:"
@@ -113,7 +135,7 @@ public class ParametroHttpHandlerTest {
                 leerRespuesta(conexion);
 
         assertEquals(
-                "Valor del parámetro 'MAX_PACIENTES': [Simulado]",
+                "100",
                 respuesta);
     }
 
@@ -141,7 +163,7 @@ public class ParametroHttpHandlerTest {
                 leerRespuesta(conexion);
 
         assertEquals(
-                "Valor del parámetro 'null': [Simulado]",
+                "No encontrado",
                 respuesta);
     }
 
@@ -205,7 +227,7 @@ public class ParametroHttpHandlerTest {
                 leerRespuesta(conexion);
 
         assertEquals(
-                "Parámetro 'MAX PACIENTES' guardado con valor 'VALOR PRUEBA'",
+                "Parámetro 'MAX PACIENTES' guardado correctamente",
                 respuesta);
     }
 }
