@@ -483,8 +483,8 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 ### Trazabilidad
 
-- [Issue #XX — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/XX).
-- [PR #XX — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/XX).
+- [Issue #17 — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/17).
+- [PR #61 — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/61).
 - [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-8).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
@@ -529,6 +529,75 @@ Para funcionar, necesita que el servidor de citas esté disponible en el puerto 
 - [PR #52 — Integración de CDU9](https://github.com/SheilaCS/ISO2-2026-C201/pull/52).
 - [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-9).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
+
+## Iteración 11 — CDU11: Gestionar calidad y seguridad (RF18)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `ISeguridadService`, implementado por `SeguridadServiceImpl`. El servicio gestiona las reglas de control de acceso (RBAC) y almacena los registros de auditoría en memoria mediante una lista de textos.
+
+**Justificación:** el objetivo del CDU11 es fijar la lógica de seguridad y la trazabilidad de las acciones. Al igual que en el resto del proyecto, no se utiliza una base de datos real en esta fase, sino estructuras en memoria que posteriormente podrán ser sustituidas por repositorios.
+
+### Reglas de negocio y seguridad
+
+**Decisión:** aplicar las siguientes reglas de control de acceso y calidad.
+
+- **Seguridad (Control de acceso):** La acción `GESTIONAR_USUARIOS` está reservada exclusivamente al rol `ADMINISTRADOR`. El rol debe compararse tras aplicar `trim()` y `toUpperCase()`.
+- **Seguridad (Privacidad):** Para la acción `VER_HISTORIAL`, un usuario con rol `PACIENTE` solo tendrá permitido el acceso a su propio historial (simulado en esta fase).
+- **Calidad (Trazabilidad):** Todas las peticiones, tanto si son concedidas como denegadas, deben registrarse obligatoriamente en un log de auditoría mediante `registrarAuditoria(...)`.
+- **Formato del log:** Cada registro de auditoría debe incluir la marca temporal exacta (`LocalDateTime.now()`), el usuario, la acción realizada y el resultado (permitido/denegado).
+- **Consulta de logs:** Solo el rol `ADMINISTRADOR` tiene permiso para consultar los logs del sistema.
+
+**Justificación:** garantizar la integridad y confidencialidad de los datos clínicos, cumpliendo con los requisitos de seguridad y calidad exigidos en el proyecto.
+
+### Comunicación entre cliente y servidor
+
+**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `SeguridadHttpClient` y el servidor `SeguridadHttpHandler`, que escucha en `127.0.0.1`, puerto 8087 (para evitar conflictos con el 8084 de parámetros y el 8085 de informes). La verificación se expone en `/seguridad/verificar` (POST) y la consulta de logs en `/seguridad/logs` (GET), con formularios codificados en UTF-8.
+
+**Justificación:** mantener la misma arquitectura de comunicación que el resto de módulos del sistema.
+
+### Validación en cliente y servidor
+
+**Decisión:** el cliente comprueba que los campos no estén vacíos antes de enviar la petición. Sin embargo, el servidor (`SeguridadServiceImpl`) repite y centraliza toda la lógica de validación de roles y permisos.
+
+**Justificación:** aunque el cliente valide para dar una respuesta rápida, el control de seguridad real y la auditoría deben residir siempre en el servidor, ya que un cliente manipulado podría intentar saltarse las restricciones.
+
+### Interfaz del cliente
+
+**Decisión:** construir `SeguridadGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(3, 2)` con los campos `Usuario`, `Rol` y `Acción`, y dos botones `Verificar Permiso` y `Ver Logs`. El resultado se muestra en un `JTextArea` no editable. `SeguridadGUI(SeguridadHttpClient)` permite inyectar un cliente simulado para las pruebas.
+
+**Justificación:** mantener la misma pauta visual y de inyección de dependencias que el resto de pantallas Swing del proyecto.
+
+### Organización de las pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la trazabilidad entre código de producción y código de prueba.
+
+- El servicio se prueba verificando los distintos niveles de acceso según el rol del usuario y las acciones solicitadas.
+- El servicio también se prueba validando el registro y recuperación de auditorías de seguridad.
+- El servidor HTTP se prueba arrancándolo sobre un puerto libre y realizando peticiones HTTP reales mediante GET y POST.
+- El cliente HTTP se prueba mediante un servidor simulado que permite validar las peticiones enviadas sin depender de servicios externos.
+- La interfaz gráfica se prueba utilizando clientes simulados para aislar la lógica de presentación y comprobar la gestión de resultados y errores.
+- Se verifican tanto los escenarios de acceso autorizado como los intentos de acceso denegado y los errores de comunicación.
+- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado "Testing".
+
+**Resultado:**
+
+Se ejecutaron correctamente **36 pruebas automatizadas**:
+
+- **Servidor:** 22 pruebas.
+- **Cliente:** 14 pruebas.
+
+La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+
+### Trazabilidad
+
+- [Issue #72 — Entregar Iteración 11 (RF18)](https://github.com/SheilaCS/ISO2-2026-C201/issues/72). 
+- [PR #20 — Integración de CDU11](https://github.com/SheilaCS/ISO2-2026-C201/pull/20). 
+- [Documentación de la iteración 11](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-11).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
 
 ## Iteración 12 — CDU12: Historial de pruebas (RF04)
 
