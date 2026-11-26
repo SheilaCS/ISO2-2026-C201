@@ -297,7 +297,7 @@ Mateo implementó el servidor y sus pruebas, y Tomás el cliente. Juan Manuel y 
 - [Issue #13 — Iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/issues/13).
 - [PR #51 — Servidor y pruebas](https://github.com/SheilaCS/ISO2-2026-C201/pull/51).
 - [PR #53 — Cliente y correcciones](https://github.com/SheilaCS/ISO2-2026-C201/pull/53).
-- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-12).
+- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-04).
 - [PR #59 — Decisiones de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/pull/59).
 - [PR #62 — Pruebas de acceso no autorizado](https://github.com/SheilaCS/ISO2-2026-C201/pull/62).
 
@@ -374,7 +374,7 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 - [Issue #14 — Entregar Iteración 5 (RF17)](https://github.com/SheilaCS/ISO2-2026-C201/issues/14).
 - [PR #60 — Integración de CDU5](https://github.com/SheilaCS/ISO2-2026-C201/pull/60).
-- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-15).
+- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-05).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
@@ -417,7 +417,7 @@ Los horarios se guardan en memoria.
 ### Trazabilidad
 
 - [PR #46 — Integración de CDU6](https://github.com/SheilaCS/ISO2-2026-C201/pull/46).
-- [Documentación de la iteración 6](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-6).
+- [Documentación de la iteración 6](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-06).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -485,7 +485,7 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 - [Issue #17 — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/17).
 - [PR #61 — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/61).
-- [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-8).
+- [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-08).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
@@ -527,7 +527,7 @@ Para funcionar, necesita que el servidor de citas esté disponible en el puerto 
 ### Trazabilidad
 
 - [PR #52 — Integración de CDU9](https://github.com/SheilaCS/ISO2-2026-C201/pull/52).
-- [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-9).
+- [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-09).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -594,7 +594,7 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 - [Issue #72 — Entregar Iteración 11 (RF18)](https://github.com/SheilaCS/ISO2-2026-C201/issues/72). 
 - [PR #20 — Integración de CDU11](https://github.com/SheilaCS/ISO2-2026-C201/pull/20). 
-- [Documentación de la iteración 11](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-11).
+- [Documentación de la iteración 11](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-11).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
@@ -641,7 +641,7 @@ Como el servidor de realizaciones solo admite al rol `MEDICO`, `ProveedorHistori
 ### Trazabilidad
 
 - [PR #70 — Integración de CDU12](https://github.com/SheilaCS/ISO2-2026-C201/pull/70).
-- [Documentación de la iteración 12](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-12).
+- [Documentación de la iteración 12](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-12).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 ## Iteración 15 — CDU15: Listas de espera y huecos (RF15)
@@ -682,7 +682,7 @@ La aprobación y la integración de cada cambio se acreditan mediante el histori
 ### Trazabilidad
 
 - [PR #74 — Integración de CDU15](https://github.com/SheilaCS/ISO2-2026-C201/pull/74).
-- [Documentación de la iteración 15](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-15).
+- [Documentación de la iteración 15](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-15).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
