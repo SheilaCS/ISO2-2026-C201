@@ -94,7 +94,7 @@ Se utilizan las pruebas existentes de `AutenticacionServiceImplTest` (clave inco
 - [Issue #9 — Entregar Iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/issues/9).
 - [PR #35 — Integración de CU01](https://github.com/SheilaCS/ISO2-2026-C201/pull/35).
 - [PR #37 — Revisión de tests y eliminación del simulador](https://github.com/SheilaCS/ISO2-2026-C201/pull/37).
-- [Documentación de la iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-1).
+- [Documentación de la iteración 1](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-01).
 - [PR #40 — Ampliación de pruebas con clases de equivalencia y valores límite](https://github.com/SheilaCS/ISO2-2026-C201/pull/40).
 - [PR #50 — Pruebas de la pantalla de inicio de sesión](https://github.com/SheilaCS/ISO2-2026-C201/pull/50).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
@@ -162,7 +162,7 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 - [Issue #10 — Entregar Iteración 2 (RF06)](https://github.com/SheilaCS/ISO2-2026-C201/issues/10).
 - [PR #57 — Integración de CDU2](https://github.com/SheilaCS/ISO2-2026-C201/pull/57).
-- [Documentación de la iteración 2](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-2).
+- [Documentación de la iteración 2](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-02).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
@@ -213,7 +213,7 @@ La aprobación y la integración de cada cambio se acreditan mediante el histori
 ### Trazabilidad
 
 - [PR #45 — Integración de CDU3](https://github.com/SheilaCS/ISO2-2026-C201/pull/45).
-- [Documentación de la iteración 3](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-3).
+- [Documentación de la iteración 3](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-03).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
@@ -297,7 +297,7 @@ Mateo implementó el servidor y sus pruebas, y Tomás el cliente. Juan Manuel y 
 - [Issue #13 — Iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/issues/13).
 - [PR #51 — Servidor y pruebas](https://github.com/SheilaCS/ISO2-2026-C201/pull/51).
 - [PR #53 — Cliente y correcciones](https://github.com/SheilaCS/ISO2-2026-C201/pull/53).
-- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-4).
+- [Documentación de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-12).
 - [PR #59 — Decisiones de la iteración 4](https://github.com/SheilaCS/ISO2-2026-C201/pull/59).
 - [PR #62 — Pruebas de acceso no autorizado](https://github.com/SheilaCS/ISO2-2026-C201/pull/62).
 
@@ -374,7 +374,7 @@ La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos 
 
 - [Issue #14 — Entregar Iteración 5 (RF17)](https://github.com/SheilaCS/ISO2-2026-C201/issues/14).
 - [PR #60 — Integración de CDU5](https://github.com/SheilaCS/ISO2-2026-C201/pull/60).
-- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-5).
+- [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-15).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
