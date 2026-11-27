@@ -1,11 +1,5 @@
 package com.sescam.radiodiagnostico.cliente.pacientes;
 
-import com.sun.net.httpserver.HttpServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -13,7 +7,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.sun.net.httpserver.HttpServer;
 
 @DisplayName("Cliente HTTP de pacientes (CDU4)")
 class PacientesHttpClientTest {
@@ -153,7 +156,7 @@ class PacientesHttpClientTest {
     }
 
     @Test
-    @DisplayName("Construye instancias con los constructores por defecto configurados en el puerto 8087")
+    @DisplayName("Construye instancias con los constructores por defecto configurados en el puerto 8092")
     void constructorPorDefectoNoFalla() {
         assertNotNull(new PacientesHttpClient());
         assertNotNull(new PacientesHttpClient("administrativo.demo", "1234"));
