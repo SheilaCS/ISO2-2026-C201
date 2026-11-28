@@ -244,7 +244,7 @@ La baja lógica es definitiva: no se ofrece una operación para reactivar a un p
 
 ### Comunicación y permisos
 
-**Decisión:** comunicar `PacientesHttpClient` con `GestionPacientesHttpServer` mediante HTTP, en el puerto predeterminado 8087, utilizando formularios codificados en UTF-8.
+**Decisión:** comunicar `PacientesHttpClient` con `GestionPacientesHttpServer` mediante HTTP, en el puerto predeterminado 8092, utilizando formularios codificados en UTF-8. El puerto se cambió primero de 8084 a 8087 (PR #66), por coincidir con el de parámetros, y después a 8092, por coincidir con el de seguridad.
 
 El servidor reutiliza la autenticación de demostración mediante HTTP Basic y permite las operaciones solo al rol `ADMINISTRATIVO`: responde 401 ante credenciales inválidas y 403 ante un rol no autorizado.
 

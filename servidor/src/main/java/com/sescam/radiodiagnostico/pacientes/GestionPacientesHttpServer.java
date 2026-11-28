@@ -1,9 +1,5 @@
 package com.sescam.radiodiagnostico.pacientes;
 
-import com.sescam.radiodiagnostico.autenticacion.*;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
@@ -11,7 +7,21 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.UUID;
+
+import com.sescam.radiodiagnostico.autenticacion.AutenticacionServiceImpl;
+import com.sescam.radiodiagnostico.autenticacion.IAutenticacionService;
+import com.sescam.radiodiagnostico.autenticacion.Rol;
+import com.sescam.radiodiagnostico.autenticacion.Sesion;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 
 public class GestionPacientesHttpServer {
 
@@ -284,7 +294,7 @@ public class GestionPacientesHttpServer {
     }
 
     public static void main(String[] args) throws IOException {
-        int puerto = Integer.getInteger("pacientes.puerto", 8087);
+        int puerto = Integer.getInteger("pacientes.puerto", 8092);
         HttpServer servidor = crearServidor(puerto);
         servidor.start();
         System.out.println(
