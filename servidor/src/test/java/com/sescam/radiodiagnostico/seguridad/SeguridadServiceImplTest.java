@@ -1,201 +1,254 @@
 package com.sescam.radiodiagnostico.seguridad;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class SeguridadServiceImplTest {
+import com.sescam.radiodiagnostico.autenticacion.Rol;
+import com.sescam.radiodiagnostico.roles.IRolesService;
+import com.sescam.radiodiagnostico.roles.Permiso;
+import com.sescam.radiodiagnostico.roles.RolesException;
+
+class SeguridadServiceImplTest {
 
     private SeguridadServiceImpl servicio;
 
     @BeforeEach
     void setUp() {
-        servicio = new SeguridadServiceImpl();
+        servicio = new SeguridadServiceImpl(new RolesStub());
     }
 
-    // ==========================
-    // verificarPermiso()
-    // ==========================
+    private static class RolesStub implements IRolesService {
+
+        @Override
+        public Rol consultarRol(String usuario) {
+
+            if ("desconocido".equals(usuario)) {
+                throw new RolesException(
+                        RolesException.Codigo.USUARIO_NO_ENCONTRADO,
+                        "No existe");
+            }
+
+            return Rol.ADMINISTRADOR;
+        }
+
+        @Override
+        public boolean tienePermiso(
+                String usuario,
+                Permiso permiso) {
+
+            return "admin".equals(usuario);
+        }
+
+        @Override
+        public Map<String, Rol> listarUsuarios() {
+            return Map.of();
+        }
+
+        @Override
+        public Rol cambiarRol(
+                String administrador,
+                String usuario,
+                Rol nuevoRol) {
+
+            return nuevoRol;
+        }
+
+        @Override
+        public Set<Permiso> consultarPermisos(
+                Rol rol) {
+
+            return Set.of();
+        }
+
+        @Override
+        public Set<Permiso> concederPermiso(
+                Rol rol,
+                Permiso permiso) {
+
+            return Set.of();
+        }
+
+        @Override
+        public Set<Permiso> retirarPermiso(
+                Rol rol,
+                Permiso permiso) {
+
+            return Set.of();
+        }
+    }
 
     @Test
-    @DisplayName("Administrador puede gestionar usuarios")
-    void testAdministradorGestionUsuarios() {
+    void constructorNull() {
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new SeguridadServiceImpl(null));
+    }
+
+    @Test
+    void registrarCorrectamente() {
 
         assertTrue(
-                servicio.verificarPermiso(
+                servicio.registrarAuditoria(
                         "admin",
-                        "ADMINISTRADOR",
-                        "GESTIONAR_USUARIOS"));
+                        "LOGIN",
+                        "correcto"));
     }
 
     @Test
-    @DisplayName("Paciente no puede gestionar usuarios")
-    void testPacienteGestionUsuarios() {
+    void usuarioNull() {
 
         assertFalse(
-                servicio.verificarPermiso(
-                        "juan",
-                        "PACIENTE",
-                        "GESTIONAR_USUARIOS"));
+                servicio.registrarAuditoria(
+                        null,
+                        "LOGIN",
+                        "ok"));
     }
 
     @Test
-    @DisplayName("Paciente puede ver historial")
-    void testPacienteVerHistorial() {
+    void usuarioVacio() {
+
+        assertFalse(
+                servicio.registrarAuditoria(
+                        " ",
+                        "LOGIN",
+                        "ok"));
+    }
+
+    @Test
+    void accionNull() {
+
+        assertFalse(
+                servicio.registrarAuditoria(
+                        "admin",
+                        null,
+                        "ok"));
+    }
+
+    @Test
+    void accionVacia() {
+
+        assertFalse(
+                servicio.registrarAuditoria(
+                        "admin",
+                        "",
+                        "ok"));
+    }
+
+    @Test
+    void detallesNull() {
 
         assertTrue(
-                servicio.verificarPermiso(
-                        "juan",
-                        "PACIENTE",
-                        "VER_HISTORIAL"));
-    }
-
-    @Test
-    @DisplayName("Medico puede realizar accion genérica")
-    void testMedicoOperacionGenerica() {
-
-        assertTrue(
-                servicio.verificarPermiso(
-                        "medico1",
-                        "MEDICO",
-                        "CONSULTAR"));
-    }
-
-    @Test
-    @DisplayName("Usuario nulo")
-    void testUsuarioNulo() {
-
-        assertFalse(
-                servicio.verificarPermiso(
-                        null,
-                        "ADMINISTRADOR",
-                        "CONSULTAR"));
-    }
-
-    @Test
-    @DisplayName("Rol nulo")
-    void testRolNulo() {
-
-        assertFalse(
-                servicio.verificarPermiso(
-                        "juan",
-                        null,
-                        "CONSULTAR"));
-    }
-
-    @Test
-    @DisplayName("Accion nula")
-    void testAccionNula() {
-
-        assertFalse(
-                servicio.verificarPermiso(
-                        "juan",
-                        "ADMINISTRADOR",
+                servicio.registrarAuditoria(
+                        "admin",
+                        "LOGIN",
                         null));
     }
 
-    // ==========================
-    // registrarAuditoria()
-    // ==========================
-
     @Test
-    @DisplayName("Registrar auditoria correctamente")
-    void testRegistrarAuditoria() {
+    void rolDesconocido() {
+
+        servicio.registrarAuditoria(
+                "desconocido",
+                "LOGIN",
+                "ok");
+
+        String log =
+                servicio.consultarLogs().get(0);
 
         assertTrue(
-                servicio.registrarAuditoria(
-                        "juan",
-                        "CONSULTAR",
-                        "Operación realizada"));
+                log.contains("DESCONOCIDO"));
     }
 
     @Test
-    @DisplayName("Registrar auditoria con usuario nulo")
-    void testRegistrarAuditoriaUsuarioNulo() {
+    void incluyeRolAdministrador() {
+
+        servicio.registrarAuditoria(
+                "admin",
+                "LOGIN",
+                "ok");
+
+        String log =
+                servicio.consultarLogs().get(0);
+
+        assertTrue(
+                log.contains("ADMINISTRADOR"));
+    }
+
+    @Test
+    void puedeConsultar() {
+
+        assertTrue(
+                servicio.puedeConsultarAuditoria(
+                        "admin"));
+    }
+
+    @Test
+    void noPuedeConsultar() {
 
         assertFalse(
-                servicio.registrarAuditoria(
-                        null,
-                        "CONSULTAR",
-                        "Detalle"));
+                servicio.puedeConsultarAuditoria(
+                        "usuario"));
     }
 
     @Test
-    @DisplayName("Registrar auditoria con accion nula")
-    void testRegistrarAuditoriaAccionNula() {
+    void usuarioNullConsultar() {
 
         assertFalse(
-                servicio.registrarAuditoria(
-                        "juan",
-                        null,
-                        "Detalle"));
+                servicio.puedeConsultarAuditoria(
+                        null));
     }
 
-    // ==========================
-    // obtenerLogs()
-    // ==========================
+    @Test
+    void usuarioVacioConsultar() {
+
+        assertFalse(
+                servicio.puedeConsultarAuditoria(
+                        " "));
+    }
 
     @Test
-    @DisplayName("Logs vacíos")
-    void testObtenerLogsVacios() {
+    void logsVacios() {
 
         assertEquals(
-                "No hay registros de auditoría.",
-                servicio.obtenerLogs());
+                0,
+                servicio.consultarLogs().size());
     }
 
     @Test
-    @DisplayName("Logs con un registro")
-    void testObtenerLogsConRegistro() {
+    void logsConContenido() {
 
         servicio.registrarAuditoria(
-                "juan",
-                "CONSULTAR",
-                "Acceso correcto");
+                "admin",
+                "LOGIN",
+                "ok");
 
-        String logs =
-                servicio.obtenerLogs();
-
-        assertTrue(
-                logs.contains("juan"));
-
-        assertTrue(
-                logs.contains("CONSULTAR"));
-
-        assertTrue(
-                logs.contains("Acceso correcto"));
+        assertEquals(
+                1,
+                servicio.consultarLogs().size());
     }
 
     @Test
-    @DisplayName("Logs con varios registros")
-    void testObtenerLogsVariosRegistros() {
+    void logsInmutables() {
 
         servicio.registrarAuditoria(
-                "juan",
-                "CONSULTAR",
-                "Detalle 1");
+                "admin",
+                "LOGIN",
+                "ok");
 
-        servicio.registrarAuditoria(
-                "maria",
-                "MODIFICAR",
-                "Detalle 2");
+        List<String> logs =
+                servicio.consultarLogs();
 
-        String logs =
-                servicio.obtenerLogs();
-
-        assertTrue(
-                logs.contains("juan"));
-
-        assertTrue(
-                logs.contains("maria"));
-
-        assertTrue(
-                logs.contains("Detalle 1"));
-
-        assertTrue(
-                logs.contains("Detalle 2"));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> logs.add("otro"));
     }
 }

@@ -1,358 +1,529 @@
 package com.sescam.radiodiagnostico.cliente.seguridad;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.GraphicsEnvironment;
 import java.awt.Window;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
-import javax.swing.JButton;
+import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class SeguridadGUITest {
 
-    private SeguridadGUI ventana;
-    private ClienteSimulado cliente;
-
-    private static class ClienteSimulado extends SeguridadHttpClient {
-
-        boolean errorConexion;
-
-        String usuarioRecibido;
-        String rolRecibido;
-        String accionRecibida;
-
-        @Override
-        public String verificarPermiso(
-                String usuario,
-                String rol,
-                String accion) {
-
-            usuarioRecibido = usuario;
-            rolRecibido = rol;
-            accionRecibida = accion;
-
-            if (errorConexion) {
-                throw new RuntimeException(
-                        "Servidor no disponible");
-            }
-
-            return "PERMITIDO";
-        }
-
-        @Override
-        public String obtenerLogs(
-                String rol) {
-
-            rolRecibido = rol;
-
-            if (errorConexion) {
-                throw new RuntimeException(
-                        "Servidor no disponible");
-            }
-
-            return "LOGS DEL SISTEMA";
-        }
-    }
-
-    @BeforeEach
-    void preparar() throws Exception {
-
-        assumeFalse(
-                GraphicsEnvironment.isHeadless(),
-                "Se necesita entorno gráfico");
-
-        SwingUtilities.invokeAndWait(() -> {
-
-            cliente = new ClienteSimulado();
-
-            ventana = new SeguridadGUI(cliente);
-
-            escribir("txtUsuario", "juan");
-            escribir("txtRol", "ADMINISTRADOR");
-            escribir("txtAccion", "CONSULTAR");
-        });
-    }
-
-    @AfterEach
-    void finalizar() throws Exception {
-
-        if (ventana != null) {
-
-            SwingUtilities.invokeAndWait(
-                    () -> ventana.dispose());
-        }
-    }
-
-    private Object obtenerCampo(
-            String nombre) {
-
-        try {
-
-            Field campo =
-                    SeguridadGUI.class
-                            .getDeclaredField(nombre);
-
-            campo.setAccessible(true);
-
-            return campo.get(ventana);
-
-        } catch (Exception e) {
-
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void escribir(
-            String campo,
-            String valor) {
-
-        ((JTextField)
-                obtenerCampo(campo))
-                .setText(valor);
-    }
-
-    private void cambiarCampo(
-            String campo,
-            String valor)
+    private Object campo(
+            SeguridadGUI gui,
+            String nombre)
             throws Exception {
 
-        SwingUtilities.invokeAndWait(
-                () -> escribir(campo, valor));
-    }
+        Field f =
+                SeguridadGUI.class
+                        .getDeclaredField(nombre);
 
-    private JTextArea areaResultado() {
+        f.setAccessible(true);
 
-        return (JTextArea)
-                obtenerCampo("areaResultado");
-    }
-
-    private JButton buscarBoton(
-            Container contenedor,
-            String texto) {
-
-        for (Component c :
-                contenedor.getComponents()) {
-
-            if (c instanceof JButton b
-                    && texto.equals(
-                    b.getText())) {
-
-                return b;
-            }
-
-            if (c instanceof Container hijo) {
-
-                JButton resultado =
-                        buscarBoton(
-                                hijo,
-                                texto);
-
-                if (resultado != null) {
-                    return resultado;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private void pulsar(
-            String texto)
-            throws Exception {
-
-        SwingUtilities.invokeAndWait(() -> {
-
-            JButton boton =
-                    buscarBoton(
-                            ventana.getContentPane(),
-                            texto);
-
-            assertNotNull(boton);
-
-            boton.doClick();
-        });
+        return f.get(gui);
     }
 
     @Test
-    @DisplayName("Constructor correcto")
-    void testConstructor() {
+    void constructor()
+            throws Exception {
+
+        SeguridadGUI gui =
+                new SeguridadGUI(
+                        new SeguridadHttpClient(
+                                "http://localhost"));
 
         assertEquals(
-                "SESCAM - Gestión de Seguridad y Calidad (CDU11)",
-                ventana.getTitle());
+                "SESCAM - Auditoría de actividades y accesos (CDU11)",
+                gui.getTitle());
 
-        assertEquals(
-                600,
-                ventana.getWidth());
-
-        assertEquals(
-                500,
-                ventana.getHeight());
+        gui.dispose();
     }
 
     @Test
-    @DisplayName("Area resultado no editable")
-    void testAreaResultado() {
+    void areaNoEditable()
+            throws Exception {
+
+        SeguridadGUI gui =
+                new SeguridadGUI(
+                        new SeguridadHttpClient(
+                                "http://localhost"));
+
+        JTextArea area =
+                (JTextArea)
+                        campo(
+                                gui,
+                                "areaResultado");
 
         assertFalse(
-                areaResultado()
-                        .isEditable());
+                area.isEditable());
+
+        gui.dispose();
     }
 
     @Test
-    @DisplayName("Verificar permiso correctamente")
-    void testVerificarPermiso()
+    void camposExisten()
             throws Exception {
 
-        pulsar(
-                "Verificar Permiso");
+        SeguridadGUI gui =
+                new SeguridadGUI(
+                        new SeguridadHttpClient(
+                                "http://localhost"));
 
-        assertEquals(
-                "juan",
-                cliente.usuarioRecibido);
+        assertNotNull(
+                campo(gui,
+                        "txtUsuario"));
 
-        assertEquals(
-                "ADMINISTRADOR",
-                cliente.rolRecibido);
+        assertNotNull(
+                campo(gui,
+                        "txtClave"));
 
-        assertEquals(
-                "CONSULTAR",
-                cliente.accionRecibida);
+        assertNotNull(
+                campo(gui,
+                        "txtAccion"));
 
-        assertEquals(
-                "PERMITIDO",
-                areaResultado().getText());
+        assertNotNull(
+                campo(gui,
+                        "txtDetalles"));
+
+        gui.dispose();
     }
 
     @Test
-    @DisplayName("Ver logs correctamente")
-    void testVerLogs()
-            throws Exception {
-
-        pulsar(
-                "Ver Logs (Solo Admin)");
-
-        assertEquals(
-                "ADMINISTRADOR",
-                cliente.rolRecibido);
-
-        assertEquals(
-                "LOGS DEL SISTEMA",
-                areaResultado().getText());
-    }
-
-    @Test
-    @DisplayName("Error de conexión al verificar")
-    void testErrorVerificar()
-            throws Exception {
-
-        cliente.errorConexion = true;
-
-        pulsar(
-                "Verificar Permiso");
-
-        assertTrue(
-                areaResultado()
-                        .getText()
-                        .contains(
-                                "Error al conectar"));
-    }
-
-    @Test
-    @DisplayName("Error de conexión al obtener logs")
-    void testErrorLogs()
-            throws Exception {
-
-        cliente.errorConexion = true;
-
-        pulsar(
-                "Ver Logs (Solo Admin)");
-
-        assertTrue(
-                areaResultado()
-                        .getText()
-                        .contains(
-                                "Error al conectar"));
-    }
-
-    @Test
-    @DisplayName("Recortar espacios de los campos")
-    void testTrim()
-            throws Exception {
-
-        cambiarCampo(
-                "txtUsuario",
-                " juan ");
-
-        cambiarCampo(
-                "txtRol",
-                " ADMINISTRADOR ");
-
-        cambiarCampo(
-                "txtAccion",
-                " CONSULTAR ");
-
-        pulsar(
-                "Verificar Permiso");
-
-        assertEquals(
-                "juan",
-                cliente.usuarioRecibido);
-
-        assertEquals(
-                "ADMINISTRADOR",
-                cliente.rolRecibido);
-
-        assertEquals(
-                "CONSULTAR",
-                cliente.accionRecibida);
-    }
-
-    @Test
-    @DisplayName("Ejecutar main")
-    void testMain()
+    void metodoMain()
             throws Exception {
 
         SeguridadGUI.main(
                 new String[0]);
 
-        SwingUtilities.invokeAndWait(
-                () -> {
-                });
-
-        SeguridadGUI abierta = null;
+        boolean encontrada =
+                false;
 
         for (Window w :
                 Window.getWindows()) {
 
-            if (w instanceof SeguridadGUI
-                    && w != ventana
-                    && w.isVisible()) {
+            if (w instanceof SeguridadGUI) {
 
-                abierta =
-                        (SeguridadGUI) w;
+                encontrada = true;
+                w.dispose();
             }
         }
 
-        assertNotNull(abierta);
-
-        SeguridadGUI finalAbierta =
-                abierta;
-
-        SwingUtilities.invokeAndWait(
-                finalAbierta::dispose);
+        assertTrue(
+                encontrada);
     }
+
+    @Test
+    void usuarioVacio()
+            throws Exception {
+
+        SeguridadGUI gui =
+                new SeguridadGUI(
+                        new SeguridadHttpClient(
+                                "http://localhost"));
+
+        JTextField usuario =
+                (JTextField)
+                        campo(
+                                gui,
+                                "txtUsuario");
+
+        usuario.setText("");
+
+        assertEquals(
+                "",
+                usuario.getText());
+
+        gui.dispose();
+    }
+
+    @Test
+        void credencialesVacias()
+                throws Exception {
+
+        SeguridadGUI gui =
+                new SeguridadGUI(
+                        new SeguridadHttpClient(
+                                "http://localhost"));
+
+        Method metodo =
+                SeguridadGUI.class.getDeclaredMethod(
+                        "registrarAccion");
+
+        metodo.setAccessible(true);
+
+        metodo.invoke(gui);
+
+        Field campo =
+                SeguridadGUI.class.getDeclaredField(
+                        "areaResultado");
+
+        campo.setAccessible(true);
+
+        JTextArea area =
+                (JTextArea) campo.get(gui);
+
+        assertEquals(
+                "Introduce el usuario y la contraseña.",
+                area.getText());
+
+        gui.dispose();
+        }
+
+        @Test
+void accionVacia()
+        throws Exception {
+
+    SeguridadGUI gui =
+            new SeguridadGUI(
+                    new SeguridadHttpClient(
+                            "http://localhost"));
+
+    ((JTextField) obtenerCampo(
+            gui,
+            "txtUsuario"))
+            .setText("admin");
+
+    ((JPasswordField) obtenerCampo(
+            gui,
+            "txtClave"))
+            .setText("demo");
+
+    Method metodo =
+            SeguridadGUI.class.getDeclaredMethod(
+                    "registrarAccion");
+
+    metodo.setAccessible(true);
+
+    metodo.invoke(gui);
+
+    JTextArea area =
+            (JTextArea) obtenerCampo(
+                    gui,
+                    "areaResultado");
+
+    assertEquals(
+            "Introduce la acción a registrar.",
+            area.getText());
+
+    gui.dispose();
+}
+
+@Test
+void errorConexionRegistrar()
+        throws Exception {
+
+    SeguridadHttpClient cliente =
+            new SeguridadHttpClient(
+                    "http://127.0.0.1:9999/seguridad");
+
+    SeguridadGUI gui =
+            new SeguridadGUI(cliente);
+
+    ((JTextField) obtenerCampo(
+            gui,
+            "txtUsuario"))
+            .setText("admin");
+
+    ((JPasswordField) obtenerCampo(
+            gui,
+            "txtClave"))
+            .setText("demo");
+
+    ((JTextField) obtenerCampo(
+            gui,
+            "txtAccion"))
+            .setText("LOGIN");
+
+    Method metodo =
+            SeguridadGUI.class.getDeclaredMethod(
+                    "registrarAccion");
+
+    metodo.setAccessible(true);
+
+    metodo.invoke(gui);
+
+    JTextArea area =
+            (JTextArea) obtenerCampo(
+                    gui,
+                    "areaResultado");
+
+    assertTrue(
+            area.getText()
+                    .contains(
+                            "Error al conectar"));
+
+    gui.dispose();
+}
+
+        @Test
+        void errorConexionLogs()
+                throws Exception {
+
+        SeguridadHttpClient cliente =
+                new SeguridadHttpClient(
+                        "http://127.0.0.1:9999/seguridad");
+
+        SeguridadGUI gui =
+                new SeguridadGUI(cliente);
+
+        ((JTextField) obtenerCampo(
+                gui,
+                "txtUsuario"))
+                .setText("admin");
+
+        ((JPasswordField) obtenerCampo(
+                gui,
+                "txtClave"))
+                .setText("demo");
+
+        Method metodo =
+                SeguridadGUI.class.getDeclaredMethod(
+                        "verLogs");
+
+        metodo.setAccessible(true);
+
+        metodo.invoke(gui);
+
+        JTextArea area =
+                (JTextArea) obtenerCampo(
+                        gui,
+                        "areaResultado");
+
+        assertTrue(
+                area.getText()
+                        .contains(
+                                "Error al conectar"));
+
+        gui.dispose();
+        }
+
+        private Object obtenerCampo(
+                SeguridadGUI gui,
+                String nombre)
+                throws Exception {
+
+        Field field =
+                SeguridadGUI.class
+                        .getDeclaredField(nombre);
+
+        field.setAccessible(true);
+
+        return field.get(gui);
+        }
+
+        @Test
+void mostrarRespuestaCorrecta()
+        throws Exception {
+
+    SeguridadGUI gui =
+            new SeguridadGUI(
+                    new SeguridadHttpClient(
+                            "http://localhost"));
+
+    Method metodo =
+            SeguridadGUI.class.getDeclaredMethod(
+                    "mostrar",
+                    SeguridadHttpClient.Respuesta.class);
+
+    metodo.setAccessible(true);
+
+    metodo.invoke(
+            gui,
+            new SeguridadHttpClient.Respuesta(
+                    200,
+                    "OK"));
+
+    JTextArea area =
+            (JTextArea) obtenerCampo(
+                    gui,
+                    "areaResultado");
+
+    assertEquals(
+            "OK",
+            area.getText());
+
+    gui.dispose();
+}
+
+@Test
+void mostrarRespuestaError()
+        throws Exception {
+
+    SeguridadGUI gui =
+            new SeguridadGUI(
+                    new SeguridadHttpClient(
+                            "http://localhost"));
+
+    Method metodo =
+            SeguridadGUI.class.getDeclaredMethod(
+                    "mostrar",
+                    SeguridadHttpClient.Respuesta.class);
+
+    metodo.setAccessible(true);
+
+    metodo.invoke(
+            gui,
+            new SeguridadHttpClient.Respuesta(
+                    403,
+                    "Denegado"));
+
+    JTextArea area =
+            (JTextArea) obtenerCampo(
+                    gui,
+                    "areaResultado");
+
+    assertEquals(
+            "Error 403: Denegado",
+            area.getText());
+
+    gui.dispose();
+}
+
+@Test
+void claveVacia()
+        throws Exception {
+
+    SeguridadGUI gui =
+            new SeguridadGUI(
+                    new SeguridadHttpClient(
+                            "http://localhost"));
+
+    ((JTextField) obtenerCampo(
+            gui,
+            "txtUsuario"))
+            .setText("admin");
+
+    ((JPasswordField) obtenerCampo(
+            gui,
+            "txtClave"))
+            .setText("");
+
+    Method metodo =
+            SeguridadGUI.class.getDeclaredMethod(
+                    "verLogs");
+
+    metodo.setAccessible(true);
+
+    metodo.invoke(gui);
+
+    JTextArea area =
+            (JTextArea) obtenerCampo(
+                    gui,
+                    "areaResultado");
+
+    assertEquals(
+            "Introduce el usuario y la contraseña.",
+            area.getText());
+
+    gui.dispose();
+}
+private static class ClienteOK
+        extends SeguridadHttpClient {
+
+    @Override
+    public Respuesta obtenerLogs() {
+
+        return new Respuesta(
+                200,
+                "LOGS");
+    }
+
+    @Override
+    public Respuesta registrarAccion(
+            String accion,
+            String detalles) {
+
+        return new Respuesta(
+                200,
+                "REGISTRADO");
+    }
+}
+
+@Test
+void verLogsCorrectamente()
+        throws Exception {
+
+    SeguridadGUI gui =
+            new SeguridadGUI(
+                    new ClienteOK());
+
+    ((JTextField) obtenerCampo(
+            gui,
+            "txtUsuario"))
+            .setText("admin");
+
+    ((JPasswordField) obtenerCampo(
+            gui,
+            "txtClave"))
+            .setText("demo");
+
+    Method metodo =
+            SeguridadGUI.class.getDeclaredMethod(
+                    "verLogs");
+
+    metodo.setAccessible(true);
+
+    metodo.invoke(gui);
+
+    JTextArea area =
+            (JTextArea) obtenerCampo(
+                    gui,
+                    "areaResultado");
+
+    assertEquals(
+            "LOGS",
+            area.getText());
+
+    gui.dispose();
+}
+
+@Test
+void registrarCorrectamente()
+        throws Exception {
+
+    SeguridadGUI gui =
+            new SeguridadGUI(
+                    new ClienteOK());
+
+    ((JTextField) obtenerCampo(
+            gui,
+            "txtUsuario"))
+            .setText("admin");
+
+    ((JPasswordField) obtenerCampo(
+            gui,
+            "txtClave"))
+            .setText("demo");
+
+    ((JTextField) obtenerCampo(
+            gui,
+            "txtAccion"))
+            .setText("LOGIN");
+
+    Method metodo =
+            SeguridadGUI.class.getDeclaredMethod(
+                    "registrarAccion");
+
+    metodo.setAccessible(true);
+
+    metodo.invoke(gui);
+
+    JTextArea area =
+            (JTextArea) obtenerCampo(
+                    gui,
+                    "areaResultado");
+
+    assertEquals(
+            "REGISTRADO",
+            area.getText());
+
+    gui.dispose();
+}
 }
