@@ -530,6 +530,55 @@ Para funcionar, necesita que el servidor de citas esté disponible en el puerto 
 - [Documentación de la iteración 9](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-09).
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
+## Iteración 10 — CDU10: Gestionar roles y permisos (RF18)
+
+### Servicio y almacenamiento
+
+**Decisión:** definir el contrato en `IRolesService`, implementado por `RolesServiceImpl`, y separar el almacenamiento mediante `RepositorioRoles` y `RepositorioRolesEnMemoria`. Las acciones del sistema se representan con el enum `Permiso` y se reutiliza el enum `Rol` del CDU1.
+
+El repositorio empieza con los cuatro usuarios de demostración y con los permisos que el sistema ya aplica (por ejemplo, `GESTIONAR_PACIENTES` para el administrativo y `REGISTRAR_REALIZACION` para el médico).
+
+**Justificación:** seguir la misma estructura que el resto de casos de uso y mantener los datos en memoria sin incorporar una base de datos.
+
+### Reglas de negocio
+
+**Decisión:** aplicar las siguientes reglas:
+
+- Solo se puede consultar o cambiar el rol de usuarios existentes.
+- Un administrador no puede cambiar su propio rol.
+- El sistema debe conservar al menos un administrador.
+- No se puede retirar al rol `ADMINISTRADOR` el permiso `GESTIONAR_ROLES`.
+- La comprobación y el cambio se realizan como una sola operación.
+
+**Justificación:** evitar que el sistema quede sin nadie capaz de gestionar roles y permisos.
+
+### Comunicación y permisos
+
+**Decisión:** comunicar `RolesHttpClient` con `GestionRolesHttpServer` mediante HTTP, en el puerto 8091, con formularios codificados en UTF-8. El servidor autentica con HTTP Basic mediante el servicio del CDU1 y solo atiende a los usuarios con el permiso `GESTIONAR_ROLES`: responde 401 ante credenciales inválidas y 403 sin ese permiso.
+
+**Justificación:** comprobar el permiso, y no un rol fijo, hace que el propio CDU10 sea configurable. Los puertos 8080 a 8090 ya están en uso.
+
+### Alcance
+
+**Decisión:** en esta iteración, el inicio de sesión y los demás servidores siguen utilizando los roles predefinidos. Su conexión con la gestión de roles se abordará en una iteración posterior.
+
+**Justificación:** modificar el CDU1 y el control de acceso del resto de servidores afectaría a todos los casos de uso ya integrados.
+
+### Pruebas
+
+**Decisión:** mantener las pruebas en `src/test/java`, con `@DisplayName` en español y la estructura preparar, ejecutar y comprobar. Las pruebas del cliente utilizan el servidor real en un puerto libre.
+
+Las pruebas de acceso no autorizado comprueban que `MEDICO`, `PACIENTE` y `ADMINISTRATIVO` reciben 403 en las cuatro operaciones (12 casos) y que los roles y permisos no cambian tras el rechazo. También se comprueba que, al conceder `GESTIONAR_ROLES` a otro rol, este obtiene acceso.
+
+**Resultado:** 52 pruebas superadas: 34 del servidor y 18 del cliente.
+
+### Trazabilidad
+
+- [Issue #19 — Entregar Iteración 10 (RF18)](https://github.com/SheilaCS/ISO2-2026-C201/issues/19).
+- [Documentación de la iteración 10](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteraci%C3%B3n-10).
+
+La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
+
 
 ## Iteración 11 — CDU11: Gestionar calidad y seguridad (RF18)
 
