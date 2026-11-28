@@ -100,68 +100,61 @@ Se utilizan las pruebas existentes de `AutenticacionServiceImplTest` (clave inco
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
-## Iteración 2 — CDU2: Solicitar pruebas médicas (RF03)
+## Iteración 2 — CDU2: Solicitar pruebas diagnósticas (RF06)
+
+### Corrección de la iteración
+
+**Decisión:** corregir el CDU2 para que cumpla el RF06: la solicitud incluye la indicación clínica y la justificación, se guarda y se puede consultar, el servidor valida el paciente y responde con códigos HTTP de error, y solo pueden solicitar pruebas los usuarios con el permiso `SOLICITAR_PRUEBAS` del CDU10.
+
+**Justificación:** el enunciado pide la solicitud "con indicación clínica, justificación y nivel de prioridad". La primera versión no recogía la indicación ni la justificación, no guardaba las solicitudes (la consulta devolvía un texto fijo), aceptaba un paciente vacío y respondía 200 ante datos incorrectos.
 
 ### Servicio y almacenamiento
 
-**Decisión:** definir el contrato en `ISolicitudService`, implementado por `SolicitudServiceImpl`. El servicio valida los datos de la solicitud y confirma su registro, sin persistencia en base de datos en esta fase.
+**Decisión:** definir el contrato en `ISolicitudService`, implementado por `SolicitudServiceImpl`, que guarda las solicitudes en memoria. Cada solicitud se representa con el record `Solicitud` (identificador, paciente, médico, tipo de prueba, indicación clínica, justificación, prioridad y fecha) y la prioridad con el enum `Prioridad`.
 
-**Justificación:** el proyecto no utiliza base de datos en esta iteración y el objetivo del CDU2 es fijar el contrato y las reglas de validación del alta de solicitudes. La persistencia real se abordará en una versión posterior.
+**Justificación:** seguir la misma estructura que el resto de casos de uso y mantener los datos en memoria sin incorporar una base de datos.
 
 ### Reglas de negocio
 
-**Decisión:** aplicar las siguientes reglas.
+**Decisión:** aplicar las siguientes reglas:
 
-- El tipo de prueba es obligatorio y no puede quedar vacío ni compuesto solo por espacios.
-- La prioridad es obligatoria y debe ser una de `URGENTE`, `PREFERENTE` u `ORDINARIO`, sin distinguir mayúsculas y tolerando espacios exteriores.
-- Cualquier otro valor de prioridad o un tipo de prueba vacío provocan el rechazo de la solicitud.
+- El ID de paciente debe ser un entero mayor que 0.
+- El tipo de prueba, la indicación clínica y la justificación son obligatorios.
+- La prioridad debe ser `URGENTE`, `PREFERENTE` u `ORDINARIO`, sin distinguir mayúsculas.
+- El médico de la solicitud es siempre el usuario autenticado, nunca un dato enviado por el cliente.
+- El sistema asigna el identificador y la fecha de la solicitud.
 
-**Justificación:** evitar solicitudes sin información clínica útil y unificar los valores de prioridad admitidos por el sistema.
+**Justificación:** evitar solicitudes sin información clínica útil y garantizar la trazabilidad de quién solicita cada prueba.
 
-### Comunicación entre cliente y servidor
+### Comunicación y permisos
 
-**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `SolicitudHttpClient` y el servidor `SolicitudHttpHandler`, que escucha en `127.0.0.1`, puerto 8083. La creación de la solicitud se expone en `/solicitudes/crear` y la consulta en `/solicitudes/consultar`, con formularios codificados en UTF-8.
+**Decisión:** comunicar `SolicitudHttpClient` con `SolicitudHttpHandler` mediante HTTP, en `127.0.0.1`, puerto 8083, con formularios codificados en UTF-8. Las operaciones son `GET /solicitudes`, `POST /solicitudes/crear` y `GET /solicitudes/consultar?id=`. El servidor autentica con HTTP Basic mediante el servicio del CDU1 y comprueba el permiso `SOLICITAR_PRUEBAS` del CDU10: responde 400 ante datos incorrectos, 401 ante credenciales inválidas, 403 sin el permiso y 404 si la solicitud no existe.
 
-**Justificación:** seguir la misma estructura que el módulo de citas y poder probar cada parte con un servidor o un cliente simulado.
-
-### Validación en cliente y servidor
-
-**Decisión:** comprobar los datos en el cliente con `ValidacionesSolicitudes` antes de enviar la petición, y repetir las comprobaciones en `SolicitudServiceImpl`.
-
-Las validaciones del cliente son `validarId(String)`, `validarTexto(String)` y `validarPrioridad(String)`.
-
-**Justificación:** mostrar respuestas rápidas al usuario sin depender únicamente de la validación del cliente.
+**Justificación:** comprobar el permiso, y no un rol fijo, mantiene la misma pauta que el CDU10 y el CDU11.
 
 ### Interfaz del cliente
 
-**Decisión:** construir `SolicitudGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(4, 2)` con los campos `ID Paciente`, `ID Solicitud`, `Tipo de Prueba` y `Prioridad`, y dos botones `Crear Solicitud` y `Consultar Solicitud`. El resultado se muestra en un `JTextArea` no editable. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `SolicitudGUI(SolicitudHttpClient)` permite inyectar un cliente simulado.
+**Decisión:** construir `SolicitudGUI` con los campos `Usuario`, `Contraseña`, `ID Paciente`, `Tipo de prueba`, `Indicación clínica`, `Justificación`, `Prioridad` (lista desplegable) e `ID Solicitud`, y los botones `Crear Solicitud` y `Consultar Solicitud`. `ValidacionesSolicitudes` comprueba los datos antes de enviarlos. `mostrarError(String)` es `protected` y `SolicitudGUI(SolicitudHttpClient)` permite inyectar un cliente simulado.
 
-**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y separar la lógica de red de la presentación.
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y evitar errores de escritura en la prioridad.
 
-### Organización de las pruebas
+### Alcance
 
-**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la trazabilidad entre código de producción y código de prueba.
+**Decisión:** no se comprueba que el paciente exista en el CDU4 ni que el tipo de prueba esté en el catálogo del CDU5.
 
-- El servicio se prueba verificando todas las prioridades válidas y los distintos escenarios de rechazo por datos incorrectos.
-- El servidor HTTP se prueba arrancándolo en un puerto libre y realizando peticiones GET y POST reales.
-- El cliente HTTP se prueba mediante un servidor HTTP embebido que simula el comportamiento del servidor.
-- La interfaz gráfica se prueba utilizando clientes simulados para aislar la lógica de presentación de la comunicación real.
-- Se verifican tanto los flujos correctos como los errores de validación y los errores de conexión.
-- Los casos de prueba se diseñan mediante clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+**Justificación:** conectar los servidores entre sí afectaría a casos de uso ya integrados. Se abordará en una iteración posterior.
 
-**Resultado:**
+### Pruebas
 
-Se ejecutaron correctamente **64 pruebas automatizadas**:
+**Decisión:** mantener las pruebas en `src/test/java`, con clases de equivalencia, valores límite y conjetura de errores. La tabla de casos está en la wiki, página "Iteración 2", apartado "Pruebas".
 
-- **Servidor:** 20 pruebas.
-- **Cliente:** 44 pruebas.
-
-La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+**Resultado:** [X] pruebas superadas: [X] del servidor y [X] del cliente.
 
 ### Trazabilidad
 
 - [Issue #10 — Entregar Iteración 2 (RF06)](https://github.com/SheilaCS/ISO2-2026-C201/issues/10).
 - [PR #57 — Integración de CDU2](https://github.com/SheilaCS/ISO2-2026-C201/pull/57).
+- [PR #XX — Corrección del CDU2 (RF06)](https://github.com/SheilaCS/ISO2-2026-C201/pull/XX).
 - [Documentación de la iteración 2](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-02).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
