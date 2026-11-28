@@ -1,19 +1,23 @@
 package com.sescam.radiodiagnostico.cliente.parametros;
 
+import java.util.Set;
+
+/**
+ * Validaciones del cliente de configuración de parámetros (CDU5, RF17).
+ */
 public class ValidacionesParametros {
-    
-    // Validar que el texto no esté vacío
+
+    private static final Set<String> CATEGORIAS = Set.of(
+            "TIPO_PRUEBA", "PROTOCOLO", "HORARIO", "POLITICA_CITACION", "PRIORIDAD");
+
+    private ValidacionesParametros() {
+    }
+
     public static boolean validarTexto(String texto) {
         return texto != null && !texto.trim().isEmpty();
     }
 
-    // Validar que un parámetro numérico no sea negativo (ejemplo para pruebas)
-    public static boolean validarNumeroPositivo(String texto) {
-        try {
-            int num = Integer.parseInt(texto.trim());
-            return num >= 0;
-        } catch (NumberFormatException | NullPointerException e) {
-            return false;
-        }
+    public static boolean validarCategoria(String categoria) {
+        return categoria != null && CATEGORIAS.contains(categoria.trim().toUpperCase());
     }
 }

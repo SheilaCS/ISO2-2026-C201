@@ -304,76 +304,60 @@ Mateo implementó el servidor y sus pruebas, y Tomás el cliente. Juan Manuel y 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
-## Iteración 5 — CDU5: Configurar parámetros (RF05)
+## Iteración 5 — CDU5: Configurar parámetros del sistema (RF17)
+
+### Corrección de la iteración
+
+**Decisión:** corregir el CDU5 para que los parámetros se organicen por las categorías del RF17, el servidor responda con códigos HTTP de error y solo puedan modificar la configuración los usuarios con el permiso `CONFIGURAR_PARAMETROS` del CDU10.
+
+**Justificación:** en la primera versión cualquier usuario podía modificar la configuración, el servidor respondía "guardado correctamente" aunque no guardara nada, aceptaba claves vacías y respondía 200 al consultar un parámetro inexistente. La dependencia con el RF18 ya se puede cumplir porque el CDU10 está integrado.
 
 ### Servicio y almacenamiento
 
-**Decisión:** definir el contrato en `IParametroService`, implementado por `ParametroServiceImpl`, que guarda los parámetros en memoria mediante un `HashMap`.
+**Decisión:** definir el contrato en `IParametroService`, implementado por `ParametroServiceImpl`, que guarda los parámetros en memoria agrupados por categoría. Las categorías se representan con el enum `CategoriaParametro`: `TIPO_PRUEBA`, `PROTOCOLO`, `HORARIO`, `POLITICA_CITACION` y `PRIORIDAD`.
 
-**Justificación:** el proyecto no utiliza base de datos en esta fase. La lógica de almacenamiento queda separada del transporte HTTP.
+**Justificación:** el RF17 enumera estos tipos de parámetros. Agruparlos por categoría evita mezclar configuraciones distintas sin necesidad de modelar cada parámetro con su propia clase, lo que sería sobreingeniería en esta fase.
 
 ### Reglas de negocio
 
-**Decisión:** aplicar las siguientes reglas.
+**Decisión:** aplicar las siguientes reglas:
 
-- `guardarParametro(clave, valor)` solo almacena la pareja cuando ambos son no nulos; en caso contrario no modifica el mapa.
-- `obtenerParametro(clave)` devuelve `"No encontrado"` cuando la clave no existe.
+- La categoría debe ser una de las cinco definidas.
+- La clave y el valor del parámetro son obligatorios y no pueden estar vacíos.
+- Guardar un parámetro existente actualiza su valor.
+- Solo los usuarios con el permiso `CONFIGURAR_PARAMETROS` pueden guardar parámetros. Cualquier usuario autenticado puede consultarlos.
 
-**Justificación:** evitar entradas corruptas en el mapa y ofrecer una respuesta controlada al cliente cuando se consulta una clave desconocida.
+**Justificación:** evitar configuraciones incompletas y que un usuario sin permiso cambie el comportamiento del sistema, permitiendo que el resto de usuarios conozca la configuración vigente.
 
-### Comunicación entre cliente y servidor
+### Comunicación y permisos
 
-**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `ParametrosHttpClient` y el servidor `ParametroHttpHandler`, que escucha en `127.0.0.1`, puerto 8084. El guardado se expone en `/parametros/guardar` y la consulta en `/parametros/consultar`, con formularios codificados en UTF-8.
+**Decisión:** comunicar `ParametrosHttpClient` con `ParametroHttpHandler` mediante HTTP, en `127.0.0.1`, puerto 8084, con formularios codificados en UTF-8. Las operaciones son `GET /parametros`, `POST /parametros/guardar`, `GET /parametros/consultar?categoria=&clave=` y `GET /parametros/listar?categoria=`. El servidor autentica con HTTP Basic mediante el servicio del CDU1: responde 400 ante datos incorrectos, 401 ante credenciales inválidas, 403 al guardar sin el permiso y 404 si el parámetro no existe.
 
-**Justificación:** seguir la misma estructura que el resto de módulos y poder probar cada parte con un servidor o un cliente simulado.
-
-### Limitación conocida del servidor
-
-**Decisión:** en esta versión, `ParametroHttpHandler` no persiste los valores enviados: la respuesta de `/guardar` es un eco del par recibido y la de `/consultar` devuelve un valor simulado. La lógica real ya existe en `ParametroServiceImpl`, pero aún no está cableada al handler.
-
-**Justificación:** el objetivo de la iteración es fijar el contrato HTTP y la pantalla de configuración. El cableado definitivo entre handler y servicio se hará cuando se integre la persistencia.
-
-### Validación en cliente
-
-**Decisión:** comprobar los datos en el cliente con `ValidacionesParametros`:
-
-- `validarTexto(String)`: no nulo y no vacío tras `trim()`.
-- `validarNumeroPositivo(String)`: entero mayor o igual que cero, tolerante a espacios.
-
-La GUI lanza `IllegalArgumentException` con mensaje en español cuando la validación falla.
-
-**Justificación:** ofrecer respuesta inmediata al usuario y reutilizar validaciones comunes con el resto de módulos.
+**Justificación:** mantener la misma pauta que el CDU10 y el CDU11.
 
 ### Interfaz del cliente
 
-**Decisión:** construir `ParametroGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(2, 2)` con los campos `Clave del parámetro` y `Valor`, y dos botones `Guardar` y `Consultar`. El resultado se muestra en un `JTextArea` no editable. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `ParametroGUI(ParametrosHttpClient)` permite inyectar un cliente simulado.
+**Decisión:** construir `ParametroGUI` con los campos `Usuario`, `Contraseña`, `Categoría` (lista desplegable), `Clave del parámetro` y `Valor`, y los botones `Guardar`, `Consultar` y `Listar categoría`. `ValidacionesParametros` comprueba los textos y la categoría antes de enviarlos. Se elimina `validarNumeroPositivo`, que no se usaba.
 
-**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y separar la lógica de red de la presentación.
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing y evitar categorías mal escritas.
 
-### Organización de las pruebas
+### Alcance
 
-**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para facilitar la localización de incidencias y el mantenimiento de la batería de pruebas.
+**Decisión:** los demás casos de uso todavía no leen sus parámetros de este servidor.
 
-- El servicio se prueba verificando el almacenamiento, recuperación y actualización de parámetros.
-- El servidor HTTP se prueba arrancándolo sobre un puerto libre y enviando peticiones HTTP reales.
-- El cliente HTTP se prueba mediante un servidor embebido que simula las respuestas del servidor.
-- La interfaz gráfica se prueba mediante clientes simulados que permiten validar el comportamiento sin dependencias externas.
-- Se validan tanto operaciones correctas como situaciones de error y entradas inválidas.
-- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+**Justificación:** conectar los servidores entre sí afectaría a casos de uso ya integrados. Se abordará en una iteración posterior.
 
-**Resultado:**
+### Pruebas
 
-Se ejecutaron correctamente **45 pruebas automatizadas**:
+**Decisión:** mantener las pruebas en `src/test/java`, con clases de equivalencia, valores límite y conjetura de errores. La tabla de casos está en la wiki, página "Iteración 5", apartado "Pruebas".
 
-- **Servidor:** 12 pruebas.
-- **Cliente:** 33 pruebas.
-
-La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+**Resultado:** [X] pruebas superadas: [X] del servidor y [X] del cliente.
 
 ### Trazabilidad
 
 - [Issue #14 — Entregar Iteración 5 (RF17)](https://github.com/SheilaCS/ISO2-2026-C201/issues/14).
 - [PR #60 — Integración de CDU5](https://github.com/SheilaCS/ISO2-2026-C201/pull/60).
+- [PR #XX — Corrección del CDU5 (RF17)](https://github.com/SheilaCS/ISO2-2026-C201/pull/XX).
 - [Documentación de la iteración 5](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-05).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
