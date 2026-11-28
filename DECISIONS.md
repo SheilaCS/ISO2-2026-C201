@@ -421,70 +421,67 @@ Los horarios se guardan en memoria.
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.
 
 
-## Iteración 8 — CDU8: Generar informes de mantenimiento (RF08)
+## Iteración 8 — CDU8: Crear y consultar informes e imágenes (RF09)
+
+### Corrección del caso de uso
+
+**Decisión:** rehacer el CDU8 para que implemente el RF09 (crear y consultar informes e imágenes de pacientes, actor médico). Se elimina la versión anterior de informes de mantenimiento de equipos.
+
+**Justificación:** la primera versión implementaba informes de mantenimiento de equipos, que no corresponden a ningún requisito funcional del enunciado, solo admitía los roles `TECNICO` y `ADMIN`, que no existen en el sistema, y dejaba fuera al médico, que es el actor del RF09. Además, el rol lo enviaba el cliente, por lo que cualquier usuario podía acceder indicando `ADMIN`.
 
 ### Servicio y almacenamiento
 
-**Decisión:** definir el contrato en `IInformeService`, implementado por `InformeServiceImpl`. El servicio valida la petición, comprueba el rol y confirma la generación del informe, sin persistencia en base de datos en esta fase.
+**Decisión:** definir el contrato en `IInformeService`, implementado por `InformeServiceImpl`, que guarda los informes en memoria. Cada informe se representa con el record `Informe`: identificador, paciente, prueba realizada, médico, tipo de prueba, contenido, imágenes y fecha.
 
-**Justificación:** el objetivo del CDU8 en esta iteración es fijar el contrato, las reglas de seguridad y las validaciones del informe de mantenimiento. La persistencia real se abordará en una versión posterior.
+**Justificación:** seguir la misma estructura que el resto de casos de uso y mantener los datos en memoria sin incorporar una base de datos.
 
-### Reglas de negocio y seguridad
+### Imágenes
 
-**Decisión:** aplicar las siguientes reglas.
+**Decisión:** las imágenes se guardan como referencias de texto (por ejemplo, identificadores DICOM), separadas por comas. Son opcionales.
 
-- El acceso está limitado a los roles `TECNICO` y `ADMIN`, comparados tras `trim()` y `toUpperCase()`.
-- El `idEquipo` debe ser un entero mayor que 0.
-- La `descripcion` no puede ser nula ni vacía.
-- La `fecha` debe ser parseable como `LocalDate` en formato `AAAA-MM-DD`.
-- Cualquier incumplimiento provoca el rechazo de la operación sin generar el informe.
+**Justificación:** almacenar y visualizar imágenes reales requiere la integración con RIS/PACS, que corresponde al RF20. Guardar la referencia permite asociar las imágenes al informe sin adelantar esa integración.
 
-**Justificación:** los informes de mantenimiento solo deben ser accesibles al personal técnico o administrador. La validación en servidor evita que un cliente manipulado pueda saltarse las comprobaciones del cliente.
+### Reglas de negocio
 
-### Comunicación entre cliente y servidor
+**Decisión:** aplicar las siguientes reglas:
 
-**Decisión:** comunicar el cliente y el servidor mediante HTTP. El cliente utiliza `InformesHttpClient` y el servidor `InformeHttpHandler`, que escucha en `127.0.0.1`, puerto 8085. La generación se expone en `/informes/generar` y la consulta en `/informes/consultar`, con formularios codificados en UTF-8. El handler convierte los parámetros numéricos con `parsearEntero(String)`, que devuelve `-1` ante valores no numéricos para que la validación del servicio los rechace sin lanzar `NumberFormatException`.
+- El ID de paciente y el de la prueba realizada deben ser enteros mayores que 0.
+- El tipo de prueba y el contenido del informe son obligatorios.
+- Si se indican imágenes, ninguna referencia puede estar vacía.
+- El médico del informe es siempre el usuario autenticado, nunca un dato enviado por el cliente.
+- El sistema asigna el identificador y la fecha del informe.
 
-**Justificación:** seguir la misma estructura que el resto de módulos, evitar errores no controlados ante entradas malformadas y permitir aplicar RBAC a partir del rol recibido.
+**Justificación:** garantizar que cada informe está asociado a un paciente y a una prueba, y saber qué médico lo ha firmado.
 
-### Validación en cliente y servidor
+### Comunicación y permisos
 
-**Decisión:** comprobar los datos en el cliente con `ValidacionesInformes` antes de enviar la petición, y repetir las comprobaciones en `InformeServiceImpl`.
+**Decisión:** comunicar `InformesHttpClient` con `InformeHttpHandler` mediante HTTP, en `127.0.0.1`, puerto 8085, con formularios codificados en UTF-8. Las operaciones son `GET /informes`, `POST /informes/crear`, `GET /informes/consultar?id=` y `GET /informes/paciente?idPaciente=`. El servidor autentica con HTTP Basic mediante el servicio del CDU1 y comprueba el permiso `REGISTRAR_REALIZACION` del CDU10: responde 400 ante datos incorrectos, 401 ante credenciales inválidas, 403 sin el permiso y 404 si el informe no existe.
 
-Las validaciones del cliente son `validarId(String)`, `validarTexto(String)`, `validarFecha(String)` y `tienePermiso(String)`, que acepta únicamente `TECNICO` o `ADMIN`.
-
-**Justificación:** mostrar respuestas rápidas al usuario, reforzar el RBAC en el cliente y reutilizar el mismo criterio de permisos que el servidor.
+**Justificación:** se reutiliza el permiso `REGISTRAR_REALIZACION`, que por defecto solo tiene el médico, para no modificar el CDU10, ya integrado. Crear un permiso específico para los informes queda como mejora para una iteración posterior.
 
 ### Interfaz del cliente
 
-**Decisión:** construir `InformeGUI` con `JFrame` y `DISPOSE_ON_CLOSE`, formulario `GridLayout(5, 2)` con los campos `Rol`, `ID Equipo`, `Fecha`, `Descripción` e `ID Informe`, y dos botones `Generar Informe` y `Consultar Informe`. El campo de rol se precarga con `TECNICO`. El resultado se muestra en un `JTextArea` no editable. Los errores de seguridad se muestran con `WARNING_MESSAGE` bajo el título `Seguridad`; el resto, con `ERROR_MESSAGE`. El método `mostrarError(String)` es `protected` para poder sustituirlo en pruebas. `InformeGUI(InformesHttpClient)` permite inyectar un cliente simulado.
+**Decisión:** construir `InformeGUI` con los campos `Usuario`, `Contraseña`, `ID Paciente`, `ID Prueba realizada`, `Tipo de prueba`, `Informe`, `Imágenes` e `ID Informe`, y los botones `Crear Informe`, `Consultar Informe` e `Informes del Paciente`. `ValidacionesInformes` comprueba los datos antes de enviarlos. `mostrarError(String)` es `protected` e `InformeGUI(InformesHttpClient)` permite inyectar un cliente simulado.
 
-**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing, distinguir visualmente los rechazos de seguridad y separar la lógica de red de la presentación.
+**Justificación:** mantener la misma pauta visual que el resto de pantallas Swing.
 
-### Organización de las pruebas
+### Alcance
 
-**Decisión:** mantener las pruebas en `src/test/java` de cada módulo y dentro del mismo paquete que la clase probada para asegurar la correspondencia directa entre cada componente y sus pruebas asociadas.
+**Decisión:** no se comprueba que la prueba exista en el CDU7 ni que el paciente exista en el CDU4, y el médico puede consultar los informes de cualquier paciente.
 
-- El servicio se prueba verificando las validaciones funcionales y las restricciones de seguridad basadas en roles.
-- El servidor HTTP se prueba mediante peticiones reales enviadas a un servidor embebido arrancado en un puerto libre.
-- El cliente HTTP se prueba utilizando servidores simulados para validar la construcción y envío de peticiones.
-- La interfaz gráfica se prueba mediante clientes simulados para verificar validaciones, permisos, mensajes de error y resultados mostrados al usuario.
-- Se comprueba tanto el comportamiento correcto como los escenarios de error, acceso denegado y fallos de comunicación.
-- Los casos de prueba se diseñan utilizando clases de equivalencia, valores límite y conjetura de errores. La tabla de casos se encuentra en la wiki, apartado “Testing”.
+**Justificación:** el sistema todavía no relaciona médicos con sus pacientes, y conectar los servidores entre sí afectaría a casos de uso ya integrados. Se abordará en una iteración posterior.
 
-**Resultado:**
+### Pruebas
 
-Se ejecutaron correctamente **75 pruebas automatizadas**:
+**Decisión:** mantener las pruebas en `src/test/java`, con clases de equivalencia, valores límite y conjetura de errores. La tabla de casos está en la wiki, página "Iteración 8", apartado "Pruebas".
 
-- **Servidor:** 27 pruebas.
-- **Cliente:** 48 pruebas.
-
-La ejecución de `mvn clean verify` finaliza correctamente, sin errores, fallos ni pruebas omitidas.
+**Resultado:** [X] pruebas superadas: [X] del servidor y [X] del cliente.
 
 ### Trazabilidad
 
-- [Issue #17 — Entregar Iteración 8 (RFXX)](https://github.com/SheilaCS/ISO2-2026-C201/issues/17).
+- [Issue #17 — Entregar Iteración 8 (RF09)](https://github.com/SheilaCS/ISO2-2026-C201/issues/17).
 - [PR #61 — Integración de CDU8](https://github.com/SheilaCS/ISO2-2026-C201/pull/61).
+- [PR #XX — Corrección del CDU8 (RF09)](https://github.com/SheilaCS/ISO2-2026-C201/pull/XX).
 - [Documentación de la iteración 8](https://github.com/SheilaCS/ISO2-2026-C201/wiki/Iteración-08).
 
 La aprobación y la integración de cada cambio se acreditan mediante el historial de su pull request.

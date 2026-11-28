@@ -1,9 +1,12 @@
 package com.sescam.radiodiagnostico.cliente.informes;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-
+/**
+ * Validaciones del cliente de informes e imágenes (CDU8, RF09).
+ */
 public class ValidacionesInformes {
+
+    private ValidacionesInformes() {
+    }
 
     public static boolean validarId(String texto) {
         try {
@@ -18,19 +21,16 @@ public class ValidacionesInformes {
         return texto != null && !texto.trim().isEmpty();
     }
 
-    public static boolean validarFecha(String texto) {
-        try {
-            LocalDate.parse(texto.trim());
+    /** Las imágenes son opcionales; si se indican, ninguna referencia puede estar vacía. */
+    public static boolean validarImagenes(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
             return true;
-        } catch (DateTimeParseException | NullPointerException e) {
-            return false;
         }
-    }
-    
-    // Seguridad: Comprobamos que el rol sea el adecuado para ver informes
-    public static boolean tienePermiso(String rolUsuario) {
-        if (rolUsuario == null) return false;
-        String rol = rolUsuario.trim().toUpperCase();
-        return rol.equals("TECNICO") || rol.equals("ADMIN");
+        for (String imagen : texto.split(",", -1)) {
+            if (imagen.trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

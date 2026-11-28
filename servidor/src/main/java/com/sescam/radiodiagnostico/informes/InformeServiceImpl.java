@@ -1,53 +1,82 @@
 package com.sescam.radiodiagnostico.informes;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+/**
+ * Implementación en memoria del servicio de informes e imágenes (CDU8, RF09).
+ */
 public class InformeServiceImpl implements IInformeService {
 
+    private final Map<Integer, Informe> informes = new LinkedHashMap<>();
+    private int siguienteId = 1;
+
     @Override
-    public boolean generarInforme(int idEquipo, String fecha, String descripcion, String rol) {
-        // 1. SEGURIDAD: Control de acceso basado en roles (RBAC)
-        if (!esRolPermitido(rol)) {
-            System.out.println("SEGURIDAD: Intento de acceso denegado con rol: " + rol);
-            return false;
+    public synchronized Informe crearInforme(String medico, String idPaciente,
+            String idPrueba, String tipoPrueba, String contenido, String imagenes) {
+
+        if (vacio(medico)) {
+            throw new IllegalArgumentException("Falta el médico que firma el informe.");
+        }
+        int paciente = leerId(idPaciente, "El ID de paciente debe ser un entero mayor que 0.");
+        int prueba = leerId(idPrueba, "El ID de prueba debe ser un entero mayor que 0.");
+        if (vacio(tipoPrueba)) {
+            throw new IllegalArgumentException("El tipo de prueba es obligatorio.");
+        }
+        if (vacio(contenido)) {
+            throw new IllegalArgumentException("El contenido del informe es obligatorio.");
         }
 
-        // 2. CALIDAD: Validación de parámetros en el servidor
-        if (idEquipo <= 0) return false;
-        
-        if (descripcion == null || descripcion.trim().isEmpty()) return false;
-        
+        Informe informe = new Informe(siguienteId++, paciente, prueba, medico.strip(),
+                tipoPrueba.strip(), contenido.strip(), leerImagenes(imagenes),
+                LocalDateTime.now());
+        informes.put(informe.id(), informe);
+        return informe;
+    }
+
+    @Override
+    public synchronized Optional<Informe> consultarInforme(int idInforme) {
+        return Optional.ofNullable(informes.get(idInforme));
+    }
+
+    @Override
+    public synchronized List<Informe> consultarInformesPaciente(int idPaciente) {
+        return informes.values().stream()
+                .filter(i -> i.idPaciente() == idPaciente)
+                .toList();
+    }
+
+    private static List<String> leerImagenes(String texto) {
+        List<String> imagenes = new ArrayList<>();
+        if (vacio(texto)) {
+            return imagenes;
+        }
+        for (String imagen : texto.split(",")) {
+            if (imagen.isBlank()) {
+                throw new IllegalArgumentException("Hay una referencia de imagen vacía.");
+            }
+            imagenes.add(imagen.strip());
+        }
+        return imagenes;
+    }
+
+    private static int leerId(String texto, String mensaje) {
         try {
-            LocalDate.parse(fecha); // Valida formato AAAA-MM-DD
-        } catch (DateTimeParseException e) {
-            return false;
+            int id = Integer.parseInt(texto.strip());
+            if (id > 0) {
+                return id;
+            }
+        } catch (NumberFormatException | NullPointerException e) {
+            // se trata abajo
         }
-
-        // Aquí iría la lógica para guardar en Base de Datos...
-        System.out.println("Informe generado para el equipo " + idEquipo);
-        return true;
+        throw new IllegalArgumentException(mensaje);
     }
 
-    @Override
-    public String consultarInforme(int idInforme, String rol) {
-        // 1. SEGURIDAD
-        if (!esRolPermitido(rol)) {
-            return "Error de seguridad: Acceso denegado.";
-        }
-
-        if (idInforme <= 0) {
-            return "Error: ID de informe inválido.";
-        }
-
-        // Simulamos la consulta a BD
-        return "Informe " + idInforme + ": Equipo revisado correctamente. Sin incidencias.";
-    }
-
-    // Método auxiliar para la seguridad
-    private boolean esRolPermitido(String rol) {
-        if (rol == null) return false;
-        String r = rol.trim().toUpperCase();
-        return r.equals("TECNICO") || r.equals("ADMIN");
+    private static boolean vacio(String texto) {
+        return texto == null || texto.isBlank();
     }
 }
