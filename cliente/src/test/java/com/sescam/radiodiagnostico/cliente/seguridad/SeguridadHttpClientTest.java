@@ -1,210 +1,243 @@
 package com.sescam.radiodiagnostico.cliente.seguridad;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.sun.net.httpserver.HttpServer;
 
-public class SeguridadHttpClientTest {
+class SeguridadHttpClientTest {
 
     private HttpServer servidor;
+
     private SeguridadHttpClient cliente;
 
     private String rutaRecibida;
     private String metodoRecibido;
-    private String datosRecibidos;
-    private String tipoContenido;
+    private String authRecibida;
+    private String cuerpoRecibido;
 
     @BeforeEach
-    public void preparar() throws IOException {
+    void preparar() throws IOException {
 
         servidor = HttpServer.create(
-                new InetSocketAddress("127.0.0.1", 0), 0);
+                new InetSocketAddress("127.0.0.1", 0),
+                0);
 
-        servidor.createContext("/seguridad/", exchange -> {
+        servidor.createContext(
+                "/seguridad",
+                exchange -> {
 
-            rutaRecibida =
-                    exchange.getRequestURI()
-                            .toString();
+                    rutaRecibida =
+                            exchange.getRequestURI()
+                                    .toString();
 
-            metodoRecibido =
-                    exchange.getRequestMethod();
+                    metodoRecibido =
+                            exchange.getRequestMethod();
 
-            tipoContenido =
-                    exchange.getRequestHeaders()
-                            .getFirst("Content-Type");
+                    authRecibida =
+                            exchange.getRequestHeaders()
+                                    .getFirst(
+                                            "Authorization");
 
-            datosRecibidos =
-                    new String(
-                            exchange.getRequestBody()
-                                    .readAllBytes(),
-                            StandardCharsets.UTF_8);
+                    cuerpoRecibido =
+                            new String(
+                                    exchange.getRequestBody()
+                                            .readAllBytes(),
+                                    StandardCharsets.UTF_8);
 
-            String respuesta =
-                    "Operacion correcta";
+                    byte[] respuesta =
+                            "OK".getBytes(
+                                    StandardCharsets.UTF_8);
 
-            byte[] contenido =
-                    respuesta.getBytes(
-                            StandardCharsets.UTF_8);
+                    exchange.sendResponseHeaders(
+                            200,
+                            respuesta.length);
 
-            exchange.sendResponseHeaders(
-                    200,
-                    contenido.length);
+                    exchange.getResponseBody()
+                            .write(respuesta);
 
-            exchange.getResponseBody()
-                    .write(contenido);
-
-            exchange.close();
-        });
+                    exchange.close();
+                });
 
         servidor.start();
 
-        int puerto =
-                servidor.getAddress()
-                        .getPort();
-
-        cliente = new SeguridadHttpClient(
-                "http://127.0.0.1:"
-                        + puerto
+        cliente =
+                new SeguridadHttpClient(
+                        "http://127.0.0.1:"
+                        + servidor.getAddress().getPort()
                         + "/seguridad");
     }
 
     @AfterEach
-    public void finalizar() {
+    void finalizar() {
 
-        if (servidor != null) {
-            servidor.stop(0);
-        }
+        servidor.stop(0);
     }
 
     @Test
-    @DisplayName("Verificar permiso")
-    void testVerificarPermiso()
+    void registrarAccion()
             throws Exception {
 
-        String resultado =
-                cliente.verificarPermiso(
-                        "juan",
-                        "ADMINISTRADOR",
-                        "CONSULTAR");
+        cliente.setCredenciales(
+                "admin.demo",
+                "demo");
+
+        SeguridadHttpClient.Respuesta r =
+                cliente.registrarAccion(
+                        "LOGIN",
+                        "correcto");
 
         assertEquals(
-                "Operacion correcta",
-                resultado);
+                200,
+                r.codigo());
+
+        assertEquals(
+                "/seguridad/registrar",
+                rutaRecibida);
 
         assertEquals(
                 "POST",
                 metodoRecibido);
 
-        assertEquals(
-                "/seguridad/verificar",
-                rutaRecibida);
+        assertNotNull(
+                authRecibida);
 
-        String datos =
-                URLDecoder.decode(
-                        datosRecibidos,
-                        StandardCharsets.UTF_8);
-
-        assertEquals(
-                "usuario=juan&rol=ADMINISTRADOR&accion=CONSULTAR",
-                datos);
-
-        assertEquals(
-                "application/x-www-form-urlencoded; charset=UTF-8",
-                tipoContenido);
+        assertTrue(
+                cuerpoRecibido.contains(
+                        "accion=LOGIN"));
     }
 
     @Test
-    @DisplayName("Obtener logs")
-    void testObtenerLogs()
+    void obtenerLogs()
             throws Exception {
 
-        String resultado =
-                cliente.obtenerLogs(
-                        "ADMINISTRADOR");
+        cliente.setCredenciales(
+                "admin.demo",
+                "demo");
+
+        SeguridadHttpClient.Respuesta r =
+                cliente.obtenerLogs();
 
         assertEquals(
-                "Operacion correcta",
-                resultado);
+                200,
+                r.codigo());
+
+        assertEquals(
+                "/seguridad/logs",
+                rutaRecibida);
 
         assertEquals(
                 "GET",
                 metodoRecibido);
-
-        assertEquals(
-                "/seguridad/logs?rol=ADMINISTRADOR",
-                rutaRecibida);
     }
 
     @Test
-    @DisplayName("Codificar espacios")
-    void testCodificacionEspacios()
-            throws Exception {
+    void credencialesConEspacios() {
 
-        cliente.verificarPermiso(
-                "juan perez",
-                "ADMINISTRADOR",
-                "VER LOGS");
+        cliente.setCredenciales(
+                " admin.demo ",
+                "demo");
 
-        assertTrue(
-                datosRecibidos.contains(
-                        "juan+perez"));
-
-        assertTrue(
-                datosRecibidos.contains(
-                        "VER+LOGS"));
+        assertDoesNotThrow(
+                () -> cliente.obtenerLogs());
     }
 
     @Test
-    @DisplayName("Codificar caracteres especiales")
-    void testCaracteresEspeciales()
-            throws Exception {
+    void constructorNormal() {
 
-        cliente.verificarPermiso(
-                "José",
-                "ADMINISTRADOR",
-                "Acción");
-
-        String datos =
-                URLDecoder.decode(
-                        datosRecibidos,
-                        StandardCharsets.UTF_8);
-
-        assertTrue(
-                datos.contains("José"));
-
-        assertTrue(
-                datos.contains("Acción"));
-    }
-
-    @Test
-    @DisplayName("Constructor normal")
-    void testConstructorNormal() {
-
-        SeguridadHttpClient clienteNormal =
+        SeguridadHttpClient c =
                 new SeguridadHttpClient();
 
-        assertNotNull(clienteNormal);
+        assertNotNull(c);
     }
 
     @Test
-    @DisplayName("Constructor parametrizado")
-    void testConstructorParametrizado() {
+    void constructorParametrizado() {
 
-        SeguridadHttpClient clientePrueba =
+        SeguridadHttpClient c =
                 new SeguridadHttpClient(
-                        "http://localhost:9999");
+                        "http://localhost");
 
-        assertNotNull(clientePrueba);
+        assertNotNull(c);
     }
+
+    @Test
+    void respuestaCorrecta() {
+
+        SeguridadHttpClient.Respuesta r =
+                new SeguridadHttpClient.Respuesta(
+                        200,
+                        "OK");
+
+        assertTrue(
+                r.correcta());
+    }
+
+    @Test
+    void respuestaIncorrecta() {
+
+        SeguridadHttpClient.Respuesta r =
+                new SeguridadHttpClient.Respuesta(
+                        403,
+                        "Error");
+
+        assertFalse(
+                r.correcta());
+    }
+
+        
+    @Test
+void credencialesNulas() {
+
+    cliente.setCredenciales(
+            null,
+            null);
+
+    assertDoesNotThrow(
+            () -> cliente.obtenerLogs());
+}
+
+@Test
+void respuesta299() {
+
+    SeguridadHttpClient.Respuesta r =
+            new SeguridadHttpClient.Respuesta(
+                    299,
+                    "ok");
+
+    assertTrue(r.correcta());
+}
+
+@Test
+void respuesta300() {
+
+    SeguridadHttpClient.Respuesta r =
+            new SeguridadHttpClient.Respuesta(
+                    300,
+                    "error");
+
+    assertFalse(
+            r.correcta());
+}
+
+@Test
+void registrarAccionNull()
+        throws Exception {
+
+    cliente.setCredenciales(
+            "admin.demo",
+            "demo");
+
+    assertDoesNotThrow(
+            () -> cliente.registrarAccion(
+                    null,
+                    null));
+}
 }
